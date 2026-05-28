@@ -5,7 +5,7 @@ import eventsBackground from '../assets/events_background.jpeg';
 <section id="leaderboard" class="relative min-h-screen py-24 md:py-32 bg-[#000000] font-sans">
   <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
     <div class="sticky top-0 w-full h-screen">
-      <div class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 z-0 mix-blend-luminosity" style="background-image:url({eventsBackground.src})"></div>
+      <div class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 z-0 mix-blend-luminosity leaderboard-bg" data-bg={eventsBackground.src}></div>
       <div class="absolute inset-0 bg-gradient-to-b from-[#10152B]/90 via-[#7e22ce]/20 to-[#000000] z-0"></div>
       <div class="absolute top-0 left-0 w-full h-64 md:h-96 bg-gradient-to-b from-black via-black/60 to-transparent z-[2]"></div>
       <div class="absolute inset-0 z-[1] opacity-20 mix-blend-overlay bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-[size:4px_4px]"></div>
@@ -56,9 +56,16 @@ import eventsBackground from '../assets/events_background.jpeg';
   }
   .banner-scroll {
     animation: bannerScroll 30s linear infinite;
+    will-change: transform;
   }
   .banner-scroll-reverse {
     animation: bannerScrollReverse 40s linear infinite;
+    will-change: transform;
+  }
+  .leaderboard-bg {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
   .leader-row {
     opacity: 0;
@@ -70,6 +77,13 @@ import eventsBackground from '../assets/events_background.jpeg';
     transform: translateX(0);
   }
 </style>
+
+<script>
+  (function() {
+    var bg = document.querySelector('.leaderboard-bg');
+    if (bg) bg.style.backgroundImage = 'url("' + bg.getAttribute('data-bg') + '")';
+  })();
+</script>
 
 <script>
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;

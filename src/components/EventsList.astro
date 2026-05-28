@@ -96,27 +96,33 @@ const REAL_EVENTS_DATA = [
 
     var maxScroll = 0;
     var sectionTop = -1;
-    var vh = window.innerHeight;
-    var lastX = 0;
     var isSwiping = false;
 
     function getScrollAmount() {
-      return wrapper.scrollWidth - window.innerWidth + window.innerWidth * 0.05;
+      var scrollable = wrapper.scrollWidth - window.innerWidth;
+      return scrollable > 0 ? scrollable : 0;
     }
 
     function setup() {
       maxScroll = getScrollAmount();
-      spacer.style.height = maxScroll + 'px';
+      var startOffset = window.innerHeight * 0.5;
+      var spacerHeight = Math.max(maxScroll + startOffset - window.innerHeight, 0);
+      spacer.style.height = spacerHeight + 'px';
 
       if (sectionTop === -1) {
         var eventsSection = section.parentElement;
-        sectionTop = eventsSection.getBoundingClientRect().top + window.scrollY + section.offsetTop;
+        sectionTop = eventsSection.getBoundingClientRect().top + window.scrollY;
       }
+    }
+
+    function getStartOffset() {
+      return window.innerHeight * 0.5;
     }
 
     function onScroll() {
       if (sectionTop === -1) return;
-      var scrolled = window.scrollY - sectionTop;
+      var startOffset = getStartOffset();
+      var scrolled = window.scrollY - sectionTop - startOffset;
       if (scrolled > 0 && scrolled < maxScroll) {
         wrapper.style.transform = 'translateX(' + (-scrolled) + 'px)';
       } else if (scrolled <= 0) {
@@ -129,42 +135,7 @@ const REAL_EVENTS_DATA = [
     new ResizeObserver(function () { setup(); onScroll(); }).observe(document.body);
 
     setup();
-    window.addEventListener('resize', function () { vh = window.innerHeight; setup(); onScroll(); });
+    window.addEventListener('resize', function () { setup(); onScroll(); });
     document.addEventListener('scroll', onScroll, { passive: true });
-
-    // Touch swipe hijack
-    var sx = 0;
-    var sy = 0;
-
-    section.addEventListener('touchstart', function (e) {
-      sx = e.touches[0].clientX;
-      sy = e.touches[0].clientY;
-      lastX = sx;
-      isSwiping = false;
-    }, { passive: true });
-
-    section.addEventListener('touchmove', function (e) {
-      if (sx === 0 && sy === 0) return;
-      var cx = e.touches[0].clientX;
-      var cy = e.touches[0].clientY;
-      var dx = sx - cx;
-      var dy = sy - cy;
-
-      if (!isSwiping && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
-        isSwiping = true;
-      }
-
-      if (isSwiping) {
-        e.preventDefault();
-        window.scrollBy({ top: (lastX - cx) * 1.5, left: 0 });
-        lastX = cx;
-      }
-    }, { passive: false });
-
-    section.addEventListener('touchend', function () {
-      sx = 0;
-      sy = 0;
-      isSwiping = false;
-    }, { passive: true });
   })();
 </script>

@@ -290,8 +290,22 @@ export default function Dither({
   enableMouseInteraction = true,
   mouseRadius = 1
 }) {
+  const containerRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="w-full h-full relative">
+    <div ref={containerRef} className="w-full h-full relative">
       <Canvas
         className="w-full h-full"
         camera={{ position: [0, 0, 6] }}
@@ -309,8 +323,8 @@ export default function Dither({
           waveColor={waveColor}
           colorNum={colorNum}
           pixelSize={pixelSize}
-          disableAnimation={disableAnimation}
-          enableMouseInteraction={enableMouseInteraction}
+          disableAnimation={disableAnimation || !isVisible}
+          enableMouseInteraction={enableMouseInteraction && isVisible}
           mouseRadius={mouseRadius}
         />
       </Canvas>

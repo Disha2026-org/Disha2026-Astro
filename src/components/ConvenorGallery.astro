@@ -8,12 +8,12 @@ import NandanImg from '../assets/DishaTeam/Nandanlal_cordinator.webp';
 import SarangiImg from '../assets/DishaTeam/Coordinator_Sarangi_Sujith.webp';
 
 const TEAM = [
-  { id: 1, name: "Mariam", title: "Convenor", img: MariamImg, cls: "w-[42%] aspect-[3/4] top-[20%] left-[28%] z-50 rotate-2" },
-  { id: 2, name: "Helize", title: "Coordinator", img: HelizeImg, cls: "w-[32%] aspect-[3/4] top-[3%] left-[10%] z-20 -rotate-3" },
+  { id: 1, name: "Mariam", title: "Convenor", img: MariamImg, cls: "w-[42%] aspect-[3/4] top-[20%] left-[33%] z-50 rotate-2" },
+  { id: 2, name: "Helize", title: "Coordinator", img: HelizeImg, cls: "w-[32%] aspect-[3/4] top-[6%] left-[10%] z-20 -rotate-3" },
   { id: 3, name: "Anooj", title: "Coordinator", img: AnoojImg, cls: "w-[30%] aspect-[4/5] top-[-1%] right-[8%] z-30 rotate-3" },
-  { id: 4, name: "Abhishek", title: "Co-Convenor", img: AbhishekImg, cls: "w-[28%] aspect-[4/5] top-[38%] left-[4%] z-40 -rotate-2" },
+  { id: 4, name: "Abhishek", title: "Co-Convenor", img: AbhishekImg, cls: "w-[33.6%] aspect-[4/5] top-[38%] left-[4%] z-40 -rotate-2" },
   { id: 5, name: "Hasil", title: "Co-Convenor", img: HasilImg, cls: "w-[34%] aspect-[3/4] top-[26%] right-[0%] z-20 rotate-1" },
-  { id: 6, name: "NandanLal", title: "Coordinator", img: NandanImg, cls: "w-[36%] aspect-[4/5] bottom-[-1%] left-[16%] z-30 -rotate-1" },
+  { id: 6, name: "NandanLal", title: "Coordinator", img: NandanImg, cls: "w-[36%] aspect-[4/5] bottom-[5%] left-[16%] z-30 -rotate-1" },
   { id: 7, name: "Sarangi", title: "Coordinator", img: SarangiImg, cls: "w-[32%] aspect-square bottom-[12%] right-[12%] z-40 -rotate-3" },
 ];
 ---
@@ -30,14 +30,14 @@ const TEAM = [
       </h2>
     </div>
 
-    <div class="lg:col-span-7 order-2 lg:row-span-2 relative aspect-[4/5] md:aspect-square w-full max-w-[550px] mx-auto lg:mr-0 select-none">
+    <div class="lg:col-span-7 order-2 lg:row-span-2 relative aspect-[4/5] w-full max-w-[550px] mx-auto lg:mr-0 select-none">
       {TEAM.map((m) => (
         <div
-          class={`absolute cursor-pointer overflow-hidden bg-[#10152B] border-2 md:border-2 origin-center rounded-sm border-white/10 shadow-2xl ${m.cls}`}
+          class={`team-photo absolute cursor-pointer overflow-hidden bg-[#10152B] border-2 md:border-2 origin-center rounded-sm border-white/10 shadow-2xl ${m.cls}`}
           data-id={m.id}
         >
-          <img src={m.img.src} alt={m.name} class="w-full h-full object-cover pointer-events-none" />
-          <div class="absolute inset-0 bg-gradient-to-t from-[#10152B] via-[#10152B]/40 to-transparent flex flex-col justify-end p-3 md:p-5 pointer-events-none">
+          <img src={m.img.src} alt={m.name} loading="lazy" decoding="async" class="w-full h-full object-cover pointer-events-none team-photo-img" />
+          <div class="team-overlay absolute inset-0 bg-gradient-to-t from-[#10152B] via-[#10152B]/40 to-transparent flex flex-col justify-end p-3 md:p-5 pointer-events-none">
             <h3 class="text-white font-black text-sm md:text-xl uppercase tracking-widest leading-none">{m.name}</h3>
             <p class="text-[#8911b3] text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] mt-1">{m.title}</p>
           </div>
@@ -64,52 +64,62 @@ const TEAM = [
   </div>
 </section>
 
+<style>
+  .team-photo {
+    will-change: transform, filter;
+  }
+  .team-photo-img {
+    filter: grayscale(100%) contrast(120%) brightness(0.7);
+    opacity: 0.8;
+    transition: filter 0.4s ease-out, opacity 0.4s ease-out;
+  }
+  .team-photo.active .team-photo-img {
+    filter: grayscale(0%) contrast(110%);
+    opacity: 1;
+  }
+  .team-photo.active {
+    border-color: #8911b3 !important;
+    box-shadow: 0 0 30px rgba(137,17,179,0.6);
+    z-index: 60 !important;
+  }
+  .team-overlay {
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+  }
+  .team-overlay h3, .team-overlay p {
+    transform: translateY(2px);
+    transition: transform 0.4s ease-out;
+  }
+  .team-photo.active .team-overlay {
+    opacity: 1;
+  }
+  .team-photo.active .team-overlay h3,
+  .team-photo.active .team-overlay p {
+    transform: translateY(0);
+  }
+</style>
+
 <script>
   (function () {
-    var photos = document.querySelectorAll('#team [data-id]');
+    var photos = document.querySelectorAll('#team .team-photo');
     if (!photos.length) return;
 
     var activeId = null;
 
-    function reset(el) {
-      var id = parseInt(el.getAttribute('data-id'));
-      var isActive = id === activeId;
-      var img = el.querySelector('img');
-      var overlay = el.querySelector('.absolute.inset-0');
-      var name = overlay ? overlay.querySelector('h3') : null;
-      var title = overlay ? overlay.querySelector('p') : null;
-
-      if (isActive) {
-        el.style.zIndex = '60';
-        el.style.borderColor = '#8911b3';
-        el.style.boxShadow = '0 0 30px rgba(137,17,179,0.6)';
-        el.style.transform = 'scale(1.08) rotate(0deg)';
-        if (img) { img.style.filter = 'grayscale(0%) contrast(110%)'; img.style.opacity = '1'; }
-        if (overlay) overlay.style.opacity = '1';
-        if (name) name.style.transform = 'translateY(0)';
-        if (title) title.style.transform = 'translateY(0)';
-      } else {
-        el.style.zIndex = '';
-        el.style.borderColor = 'rgba(255,255,255,0.1)';
-        el.style.boxShadow = '';
-        el.style.transform = '';
-        if (img) { img.style.filter = 'grayscale(100%) contrast(120%) brightness(0.7)'; img.style.opacity = '0.8'; }
-        if (overlay) overlay.style.opacity = '0';
-        if (name) name.style.transform = 'translateY(2px)';
-        if (title) title.style.transform = 'translateY(2px)';
-      }
+    function resetAll() {
+      photos.forEach(function (el) {
+        var id = parseInt(el.getAttribute('data-id'));
+        var isActive = id === activeId;
+        el.classList.toggle('active', isActive);
+        el.style.transform = isActive ? 'scale(1.08)' : '';
+      });
     }
 
-    // Set initial state (hidden)
+    // Set initial hidden + random rotation
     photos.forEach(function (el) {
-      var img = el.querySelector('img');
-      if (img) { img.style.filter = 'grayscale(100%) contrast(120%) brightness(0.7)'; img.style.opacity = '0.8'; }
-      var overlay = el.querySelector('.absolute.inset-0');
-      if (overlay) overlay.style.opacity = '0';
-      var name = overlay ? overlay.querySelector('h3') : null;
-      var title = overlay ? overlay.querySelector('p') : null;
-      if (name) name.style.transform = 'translateY(2px)';
-      if (title) title.style.transform = 'translateY(2px)';
+      var rng = Math.random() * 30 - 15;
+      el.style.opacity = '0';
+      el.style.transform = 'scale(0.8) rotate(' + rng + 'deg)';
     });
 
     // --- Reveal via IntersectionObserver ---
@@ -131,34 +141,27 @@ const TEAM = [
       }
     }, { threshold: 0.15 });
 
-    // Set initial hidden + random rotation
-    photos.forEach(function (el) {
-      var rng = Math.random() * 30 - 15;
-      el.style.opacity = '0';
-      el.style.transform = 'scale(0.8) rotate(' + rng + 'deg)';
-    });
+    if (photos.length > 0) io.observe(photos[0].parentElement);
 
-    // Add transition for hover after reveal is done + extra buffer
+    // Add transition for hover after reveal is done
     setTimeout(function () {
       photos.forEach(function (el) {
         el.style.transition = 'all 0.4s ease-out';
       });
     }, 400 + photos.length * 80 + 200);
 
-    if (photos.length > 0) io.observe(photos[0].parentElement);
-
     // --- Hover/Click ---
     photos.forEach(function (el) {
       var id = parseInt(el.getAttribute('data-id'));
       el.addEventListener('mouseenter', function () {
-        if (window.matchMedia('(hover: hover)').matches) { activeId = id; reset(el); }
+        if (window.matchMedia('(hover: hover)').matches) { activeId = id; resetAll(); }
       });
       el.addEventListener('mouseleave', function () {
-        if (window.matchMedia('(hover: hover)').matches) { activeId = null; reset(el); }
+        if (window.matchMedia('(hover: hover)').matches) { activeId = null; resetAll(); }
       });
       el.addEventListener('click', function () {
         activeId = activeId === id ? null : id;
-        photos.forEach(function (p) { reset(p); });
+        resetAll();
       });
     });
   })();
