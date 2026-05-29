@@ -96,10 +96,11 @@ const REAL_EVENTS_DATA = [
 
     var maxScroll = 0;
     var sectionTop = -1;
+    var scrollPos = 0;
+    var rafPending = false;
 
     function getScrollAmount() {
-      var scrollable = wrapper.scrollWidth - window.innerWidth;
-      return scrollable > 0 ? scrollable : 0;
+      return Math.max(0, wrapper.scrollWidth - window.innerWidth);
     }
 
     function setup() {
@@ -108,63 +109,87 @@ const REAL_EVENTS_DATA = [
 
       var eventsSection = section.parentElement;
       sectionTop = eventsSection.getBoundingClientRect().top + window.scrollY;
+      scrollPos = Math.max(0, Math.min(window.scrollY - sectionTop, maxScroll));
+      applyTransform();
     }
 
     function onScroll() {
-      if (sectionTop === -1) return;
-      var scrolled = window.scrollY - sectionTop;
-      if (scrolled > 0 && scrolled < maxScroll) {
-        wrapper.style.transform = 'translateX(' + (-scrolled) + 'px)';
-      } else if (scrolled <= 0) {
-        wrapper.style.transform = 'translateX(0px)';
-      } else {
-        wrapper.style.transform = 'translateX(' + (-maxScroll) + 'px)';
+      // FIX 1: If the user is swiping horizontally, completely ignore native scroll events.
+      // This stops the browser from snapping the layout back to the old scrollbar position.
+      if (sectionTop === -1 || isSwipingH) return; 
+
+      scrollPos = Math.max(0, Math.min(window.scrollY - sectionTop, maxScroll));
+      if (!rafPending) {
+        rafPending = true;
+        requestAnimationFrame(applyTransform);
       }
     }
 
-    var ro = new ResizeObserver(function () { setup(); onScroll(); });
-    ro.observe(document.body);
+    function applyTransform() {
+      rafPending = false;
+      wrapper.style.transform = 'translate3d(' + (-scrollPos) + 'px, 0px, 0px)';
+    }
 
-    setup();
-    window.addEventListener('resize', function () { setup(); onScroll(); });
-    document.addEventListener('scroll', onScroll, { passive: true });
-
-    // --- Touch swipe to vertical scroll (mobile) ---
+    // --- Touch swipe (mobile) ---
     var touchStartX = 0;
     var touchStartY = 0;
-    var touchLastX = 0;
-    var isSwipingHorizontally = false;
+    var isSwipingH = false;
+    var touchBaseScroll = 0;
 
     function handleTouchStart(e) {
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
-      touchLastX = touchStartX;
-      isSwipingHorizontally = false;
+      isSwipingH = false;
+      touchBaseScroll = scrollPos;
     }
 
     function handleTouchMove(e) {
       var currentX = e.touches[0].clientX;
-      var currentY = e.touches[0].clientY;
       var diffX = touchStartX - currentX;
-      var diffY = touchStartY - currentY;
+      var diffY = touchStartY - e.touches[0].clientY;
 
-      if (!isSwipingHorizontally && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
-        isSwipingHorizontally = true;
+      if (!isSwipingH && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+        isSwipingH = true;
       }
 
-      if (isSwipingHorizontally) {
-        e.preventDefault();
-        var deltaX = touchLastX - currentX;
-        window.scrollBy({ top: deltaX * 1.5, left: 0, behavior: 'instant' });
-        touchLastX = currentX;
+      if (isSwipingH) {
+        if (e.cancelable) e.preventDefault();
+        
+        // Multiply diffX by 1.2 to make the swipe feel slightly more responsive
+        scrollPos = Math.max(0, Math.min(touchBaseScroll + (diffX * 1.2), maxScroll));
+        if (!rafPending) {
+          rafPending = true;
+          requestAnimationFrame(applyTransform);
+        }
       }
     }
 
     function handleTouchEnd() {
-      touchStartX = 0;
-      touchStartY = 0;
-      isSwipingHorizontally = false;
+      if (isSwipingH) {
+        // FIX 2: The moment the user lets go, force the native vertical scrollbar 
+        // to instantly jump to match our new visual reality. 
+        window.scrollTo({
+          top: sectionTop + scrollPos,
+          left: 0,
+          behavior: 'instant' // Must be instant so it's invisible to the user
+        });
+        
+        // Delay releasing the lock by 50ms so any residual inertia scroll events are ignored
+        setTimeout(function() {
+          isSwipingH = false;
+        }, 50);
+      } else {
+        isSwipingH = false;
+      }
     }
+
+    // --- Init ---
+    var ro = new ResizeObserver(setup);
+    ro.observe(document.body);
+
+    setup();
+    window.addEventListener('resize', setup);
+    document.addEventListener('scroll', onScroll, { passive: true });
 
     var cardsSection = section.parentElement;
     if (cardsSection) {
