@@ -5,6 +5,12 @@ import { wrapEffect } from '@react-three/postprocessing';
 import { Effect } from 'postprocessing';
 import * as THREE from 'three';
 
+const _origConsoleWarn = console.warn.bind(console);
+console.warn = (msg, ...args) => {
+  if (msg && typeof msg === 'string' && msg.includes('THREE.Clock') && msg.includes('deprecated')) return;
+  _origConsoleWarn(msg, ...args);
+};
+
 const waveVertexShader = `
 precision highp float;
 varying vec2 vUv;

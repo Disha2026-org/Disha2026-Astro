@@ -96,7 +96,6 @@ const REAL_EVENTS_DATA = [
 
     var maxScroll = 0;
     var sectionTop = -1;
-    var isSwiping = false;
 
     function getScrollAmount() {
       var scrollable = wrapper.scrollWidth - window.innerWidth;
@@ -105,24 +104,15 @@ const REAL_EVENTS_DATA = [
 
     function setup() {
       maxScroll = getScrollAmount();
-      var startOffset = window.innerHeight * 0.5;
-      var spacerHeight = Math.max(maxScroll + startOffset, 0);
-      spacer.style.height = spacerHeight + 'px';
+      spacer.style.height = maxScroll + 'px';
 
-      if (sectionTop === -1) {
-        var eventsSection = section.parentElement;
-        sectionTop = eventsSection.getBoundingClientRect().top + window.scrollY;
-      }
-    }
-
-    function getStartOffset() {
-      return window.innerWidth < 768 ? window.innerHeight * 0.2 : window.innerHeight * 0.5;
+      var eventsSection = section.parentElement;
+      sectionTop = eventsSection.getBoundingClientRect().top + window.scrollY;
     }
 
     function onScroll() {
       if (sectionTop === -1) return;
-      var startOffset = getStartOffset();
-      var scrolled = window.scrollY - sectionTop - startOffset;
+      var scrolled = window.scrollY - sectionTop;
       if (scrolled > 0 && scrolled < maxScroll) {
         wrapper.style.transform = 'translateX(' + (-scrolled) + 'px)';
       } else if (scrolled <= 0) {
@@ -132,10 +122,55 @@ const REAL_EVENTS_DATA = [
       }
     }
 
-    new ResizeObserver(function () { setup(); onScroll(); }).observe(document.body);
+    var ro = new ResizeObserver(function () { setup(); onScroll(); });
+    ro.observe(document.body);
 
     setup();
     window.addEventListener('resize', function () { setup(); onScroll(); });
     document.addEventListener('scroll', onScroll, { passive: true });
+
+    // --- Touch swipe to vertical scroll (mobile) ---
+    var touchStartX = 0;
+    var touchStartY = 0;
+    var touchLastX = 0;
+    var isSwipingHorizontally = false;
+
+    function handleTouchStart(e) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchLastX = touchStartX;
+      isSwipingHorizontally = false;
+    }
+
+    function handleTouchMove(e) {
+      var currentX = e.touches[0].clientX;
+      var currentY = e.touches[0].clientY;
+      var diffX = touchStartX - currentX;
+      var diffY = touchStartY - currentY;
+
+      if (!isSwipingHorizontally && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+        isSwipingHorizontally = true;
+      }
+
+      if (isSwipingHorizontally) {
+        e.preventDefault();
+        var deltaX = touchLastX - currentX;
+        window.scrollBy({ top: deltaX * 1.5, left: 0, behavior: 'instant' });
+        touchLastX = currentX;
+      }
+    }
+
+    function handleTouchEnd() {
+      touchStartX = 0;
+      touchStartY = 0;
+      isSwipingHorizontally = false;
+    }
+
+    var cardsSection = section.parentElement;
+    if (cardsSection) {
+      cardsSection.addEventListener('touchstart', handleTouchStart, { passive: true });
+      cardsSection.addEventListener('touchmove', handleTouchMove, { passive: false });
+      cardsSection.addEventListener('touchend', handleTouchEnd, { passive: true });
+    }
   })();
 </script>

@@ -26,16 +26,15 @@ import dishaLogo from '../assets/disha_logo.webp';
     </div>
     <nav class="hidden lg:flex items-center" style="gap:clamp(20px,2.8vw,52px)">
       <a href="#about" class="nav-link font-bold text-white/50 hover:text-white transition-colors duration-200 whitespace-nowrap font-display" style="font-size:clamp(11px,0.9vw,15px);letter-spacing:0.13em">ABOUT</a>
+      <a href="#leaderboard" class="nav-link font-bold text-white/50 hover:text-white transition-colors duration-200 whitespace-nowrap font-display" style="font-size:clamp(11px,0.9vw,15px);letter-spacing:0.13em">LEADERBOARD</a>
       <a href="#events" class="nav-link font-bold text-white/50 hover:text-white transition-colors duration-200 whitespace-nowrap font-display" style="font-size:clamp(11px,0.9vw,15px);letter-spacing:0.13em">EVENTS</a>
-      <a href="#schedule" class="nav-link font-bold text-white/50 hover:text-white transition-colors duration-200 whitespace-nowrap font-display" style="font-size:clamp(11px,0.9vw,15px);letter-spacing:0.13em">SCHEDULE</a>
-      <a href="#gallery" class="nav-link font-bold text-white/50 hover:text-white transition-colors duration-200 whitespace-nowrap font-display" style="font-size:clamp(11px,0.9vw,15px);letter-spacing:0.13em">GALLERY</a>
-      <a href="#contact" class="nav-link font-bold text-white/50 hover:text-white transition-colors duration-200 whitespace-nowrap font-display" style="font-size:clamp(11px,0.9vw,15px);letter-spacing:0.13em">CONTACT</a>
+      <a href="#team" class="nav-link font-bold text-white/50 hover:text-white transition-colors duration-200 whitespace-nowrap font-display" style="font-size:clamp(11px,0.9vw,15px);letter-spacing:0.13em">CONTACT</a>
     </nav>
     <div class="hidden lg:flex items-center shrink-0">
-      <button id="header-register" class="flex items-center gap-1.5 font-bold text-white/70 hover:text-white transition-colors whitespace-nowrap font-display" style="font-size:clamp(11px,0.9vw,15px);letter-spacing:0.13em">
+      <a id="header-register" href="https://forms.gle/jHP7ByHxjmZ2psXv8" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1.5 font-bold text-white/70 hover:text-white transition-colors whitespace-nowrap font-display" style="font-size:clamp(11px,0.9vw,15px);letter-spacing:0.13em">
         REGISTER
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </button>
+      </a>
     </div>
     <div class="flex lg:hidden items-center shrink-0">
       <span id="header-title" class="font-black text-white/80 whitespace-nowrap uppercase transition-all duration-300 font-display" style="font-size:clamp(11px,3.2vw,13px);letter-spacing:0.1em">CET College Union 25-26</span>
@@ -55,28 +54,24 @@ import dishaLogo from '../assets/disha_logo.webp';
           ABOUT
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-25 shrink-0"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
+        <a href="#leaderboard" class="mobile-nav-link flex items-center justify-between px-6 py-[18px] font-semibold text-white/75 hover:text-white hover:bg-white/[0.05] border-b border-white/[0.05] transition-colors duration-150 font-display" style="font-size:clamp(14px,4vw,17px);letter-spacing:0.1em">
+          LEADERBOARD
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-25 shrink-0"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
         <a href="#events" class="mobile-nav-link flex items-center justify-between px-6 py-[18px] font-semibold text-white/75 hover:text-white hover:bg-white/[0.05] border-b border-white/[0.05] transition-colors duration-150 font-display" style="font-size:clamp(14px,4vw,17px);letter-spacing:0.1em">
           EVENTS
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-25 shrink-0"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
-        <a href="#schedule" class="mobile-nav-link flex items-center justify-between px-6 py-[18px] font-semibold text-white/75 hover:text-white hover:bg-white/[0.05] border-b border-white/[0.05] transition-colors duration-150 font-display" style="font-size:clamp(14px,4vw,17px);letter-spacing:0.1em">
-          SCHEDULE
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-25 shrink-0"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-        </a>
-        <a href="#gallery" class="mobile-nav-link flex items-center justify-between px-6 py-[18px] font-semibold text-white/75 hover:text-white hover:bg-white/[0.05] border-b border-white/[0.05] transition-colors duration-150 font-display" style="font-size:clamp(14px,4vw,17px);letter-spacing:0.1em">
-          GALLERY
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-25 shrink-0"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-        </a>
-        <a href="#contact" class="mobile-nav-link flex items-center justify-between px-6 py-[18px] font-semibold text-white/75 hover:text-white hover:bg-white/[0.05] border-b border-white/[0.05] transition-colors duration-150 !border-b-0 font-display" style="font-size:clamp(14px,4vw,17px);letter-spacing:0.1em">
+        <a href="#team" class="mobile-nav-link flex items-center justify-between px-6 py-[18px] font-semibold text-white/75 hover:text-white hover:bg-white/[0.05] border-b border-white/[0.05] transition-colors duration-150 !border-b-0 font-display" style="font-size:clamp(14px,4vw,17px);letter-spacing:0.1em">
           CONTACT
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="opacity-25 shrink-0"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
       </nav>
       <div class="p-4 pt-3">
-        <button class="w-full py-4 rounded-xl bg-gradient-to-r from-[#b530ff] to-[#ff2b93] text-white font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-[0_4px_28px_rgba(181,48,255,0.4)] font-display" style="font-size:clamp(13px,3.5vw,15px);letter-spacing:0.13em">
+        <a href="https://forms.gle/jHP7ByHxjmZ2psXv8" target="_blank" rel="noopener noreferrer" class="w-full py-4 rounded-xl bg-gradient-to-r from-[#b530ff] to-[#ff2b93] text-white font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-[0_4px_28px_rgba(181,48,255,0.4)] font-display" style="font-size:clamp(13px,3.5vw,15px);letter-spacing:0.13em">
           REGISTER NOW
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-        </button>
+        </a>
       </div>
     </div>
   </div>
@@ -111,9 +106,9 @@ import dishaLogo from '../assets/disha_logo.webp';
         <span class="text-[#B829EA] font-black text-[10px] md:text-xs tracking-tighter">S</span>
       </span>
     </div>
-    <button class="mt-8 px-12 py-3.5 bg-[#DE005F] text-white text-sm font-bold uppercase tracking-[0.2em] hover:bg-[#b8004e] active:scale-95 transition-all duration-200 select-none whitespace-nowrap relative z-10 shadow-xl font-display">
+    <a href="https://forms.gle/jHP7ByHxjmZ2psXv8" target="_blank" rel="noopener noreferrer" class="mt-8 px-12 py-3.5 bg-[#DE005F] text-white text-sm font-bold uppercase tracking-[0.2em] hover:bg-[#b8004e] active:scale-95 transition-all duration-200 select-none whitespace-nowrap relative z-10 shadow-xl font-display inline-block">
       Register
-    </button>
+    </a>
   </main>
 
   <div class="absolute bottom-[16%] md:bottom-[10%] lg:bottom-[8%] z-20 w-[120%] -ml-[10%] overflow-hidden whitespace-nowrap py-4 md:py-6 bg-black/80 border-y-[3px] -rotate-2 shadow-2xl pointer-events-none">

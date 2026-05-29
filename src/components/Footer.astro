@@ -19,9 +19,9 @@ const textContent = "DISHA '26";
         </text>
 
         <g mask="url(#textMask)">
-          <g class="wave-group">
-            <path class="wave-path-1" fill="#a855f7" opacity="0.4" d="M0,20 Q100,0 200,20 T400,20 T600,20 T800,20 T1000,20 T1200,20 T1400,20 T1600,20 V200 H0 Z" />
-            <path class="wave-path-2" fill="#9333ea" d="M0,20 Q50,5 100,20 T200,20 T300,20 T400,20 T500,20 T600,20 T700,20 T800,20 T900,20 T1000,20 T1100,20 T1200,20 T1300,20 T1400,20 T1500,20 T1600,20 V200 H0 Z" />
+          <g class="wave-group" id="footer-wave-group">
+            <path class="wave-path-1" fill="#a855f7" opacity="0.4" d="M0,48 Q100,28 200,48 T400,48 T600,48 T800,48 T1000,48 T1200,48 T1400,48 T1600,48 V200 H0 Z" />
+            <path class="wave-path-2" fill="#9333ea" d="M0,53 Q50,38 100,53 T200,53 T300,53 T400,53 T500,53 T600,53 T700,53 T800,53 T900,53 T1000,53 T1100,53 T1200,53 T1300,53 T1400,53 T1500,53 T1600,53 V200 H0 Z" />
           </g>
         </g>
       </svg>
@@ -47,6 +47,10 @@ const textContent = "DISHA '26";
     0% { transform: translateX(-800px); }
     100% { transform: translateX(0); }
   }
+  @keyframes waveGroupSlideUp {
+    0% { transform: translateY(120px); }
+    100% { transform: translateY(0); }
+  }
   .wave-path-1 {
     animation: waveSlide1 8s linear infinite;
     will-change: transform;
@@ -56,4 +60,29 @@ const textContent = "DISHA '26";
     transform: translateY(35px);
     will-change: transform;
   }
+  .wave-group {
+    transform: translateY(120px);
+    opacity: 0;
+    transition: transform 4s cubic-bezier(0, 0, 0.2, 1), opacity 0.5s ease;
+  }
+  .wave-group.visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
 </style>
+
+<script>
+  const waveGroup = document.getElementById('footer-wave-group');
+  if (waveGroup) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          waveGroup.classList.add('visible');
+          observer.unobserve(waveGroup);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(waveGroup);
+  }
+</script>
