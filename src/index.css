@@ -4,6 +4,24 @@
   --font-sans: "Radio Canada Big", sans-serif;
   --font-display: "Anton", sans-serif;
   --font-sc: "Anton SC", sans-serif;
+  --font-bohme: "Bohme", sans-serif;
+  --font-bohme-rounded: "Bohme Rounded", sans-serif;
+}
+
+@font-face {
+  font-family: 'Bohme';
+  src: url('./assets/fonts/bohme/Bohme.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bohme Rounded';
+  src: url('./assets/fonts/bohme/Bohme-Rounded.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
 .uiverse-start-button {
