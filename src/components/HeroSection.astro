@@ -37,7 +37,7 @@ import dishaLogo from '../assets/disha_logo.webp';
       </a>
     </div>
     <div class="flex lg:hidden items-center shrink-0">
-      <span id="header-title" class="font-black text-white/80 whitespace-nowrap uppercase transition-all duration-300 font-bohme" style="font-size:clamp(11px,3.2vw,13px);letter-spacing:0.1em">CET College Union 25-26</span>
+      <span id="header-title" class="font-black text-white/80 whitespace-nowrap uppercase transition-all duration-300 font-bohme" style="font-size:clamp(11px,3.2vw,13px);letter-spacing:0.1em">CET College Union 2025-26</span>
     </div>
     <div class="flex lg:hidden items-center shrink-0">
       <button id="menu-toggle" class="flex items-center justify-center text-white/60 hover:text-white transition-colors rounded-full" style="padding:6px" aria-label="Toggle menu">
@@ -267,7 +267,7 @@ import dishaLogo from '../assets/disha_logo.webp';
   if (heroEl && headerTitle) {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        headerTitle.textContent = entry.isIntersecting ? 'CET College Union 25-26' : 'Disha 2026';
+        headerTitle.textContent = entry.isIntersecting ? 'CET College Union 2025-26' : 'Disha 2026';
       },
       { threshold: 0.1 }
     );
