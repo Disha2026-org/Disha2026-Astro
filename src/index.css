@@ -6,6 +6,7 @@
   --font-sc: "Anton SC", sans-serif;
   --font-bohme: "Bohme", sans-serif;
   --font-bohme-rounded: "Bohme Rounded", sans-serif;
+  --font-myriad: "Myriad Pro", sans-serif;
 }
 
 @font-face {
@@ -20,6 +21,30 @@
   font-family: 'Bohme Rounded';
   src: url('./assets/fonts/bohme/Bohme-Rounded.ttf') format('truetype');
   font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Myriad Pro';
+  src: url('./assets/fonts/myriad-pro/MYRIADPRO-REGULAR.OTF') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Myriad Pro';
+  src: url('./assets/fonts/myriad-pro/MYRIADPRO-BOLD.OTF') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Myriad Pro';
+  src: url('./assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF') format('opentype');
+  font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
