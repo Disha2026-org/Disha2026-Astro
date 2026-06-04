@@ -15,6 +15,7 @@ const words = ABOUT_TEXT.split(' ');
   <div class="relative z-10 max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center justify-center lg:gap-24">
     <div class="w-full lg:w-1/2 flex items-center justify-center lg:justify-end mb-12 lg:mb-0 lg:-ml-20 lg:pb-40">
       <div class="relative inline-block">
+        <div class="absolute -inset-[10px] z-5 opacity-20 mix-blend-overlay pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-[size:6px_6px] scanline-move"></div>
         <img
           src={kalyaniforwebAsset.src}
           alt="Illustrated version of the Kalyani character"
@@ -22,7 +23,7 @@ const words = ABOUT_TEXT.split(' ');
           height="920"
           class="w-full h-auto object-cover max-w-sm lg:max-w-md xl:max-w-2xl drop-shadow-[0_0_25px_rgba(222,0,95,0.7)] kalyaniforweb-reveal"
         />
-        <span class="hidden lg:block absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 text-[#B829EA] font-['Sedgwick_Ave_Display',_cursive] text-6xl md:text-8xl lg:text-[8rem] font-extrabold tracking-[-0.05em] [-webkit-text-stroke:1px_#fff] drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] z-20 reveal-on-scroll">
+        <span class="block absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 text-[#B829EA] font-['Sedgwick_Ave_Display',_cursive] text-6xl md:text-8xl lg:text-[8rem] font-extrabold tracking-[-0.05em] [-webkit-text-stroke:1px_#fff] drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] z-20 reveal-on-scroll">
           Kalyani
         </span>
       </div>
@@ -50,10 +51,6 @@ const words = ABOUT_TEXT.split(' ');
         </div>
       </div>
     </div>
-
-    <span class="lg:hidden text-[#B829EA] font-['Sedgwick_Ave_Display',_cursive] text-6xl md:text-8xl font-extrabold tracking-[-0.05em] [-webkit-text-stroke:1px_#fff] drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] reveal-on-scroll">
-      Kalyani
-    </span>
   </div>
 </section>
 
@@ -64,6 +61,14 @@ const words = ABOUT_TEXT.split(' ');
   }
   .reveal-on-scroll.visible {
     opacity: 1;
+  }
+  @keyframes scanline {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(2px, 2px); }
+  }
+  .scanline-move {
+    animation: scanline 0.5s linear infinite;
+    will-change: transform;
   }
   .kalyaniforweb-reveal {
     opacity: 0;
