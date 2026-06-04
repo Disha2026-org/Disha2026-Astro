@@ -130,14 +130,15 @@ import dishaLogo from '../assets/disha_logo.webp';
 </div>
 
 <style>
-  @keyframes float {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    25% { transform: translate(7px, -7px) rotate(0.2deg); }
-    50% { transform: translate(10px, 0) rotate(0.4deg); }
-    75% { transform: translate(7px, 7px) rotate(0.2deg); }
+  @keyframes drift {
+    0% { transform: translate(0px, 0px); }
+    25% { transform: translate(15px, -10px); }
+    50% { transform: translate(0px, -20px); }
+    75% { transform: translate(-15px, -10px); }
+    100% { transform: translate(0px, 0px); }
   }
   .floating-bg {
-    animation: float 12s linear infinite;
+    animation: drift 20s linear infinite;
     will-change: transform;
   }
   @keyframes scanline {
