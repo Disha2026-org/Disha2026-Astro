@@ -15,16 +15,26 @@ const words = ABOUT_TEXT.split(' ');
 
 
   <div class="relative z-10 max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center justify-center lg:gap-24">
-    <div class="w-full lg:w-1/2 flex items-center justify-center lg:justify-end mb-12 lg:mb-0 lg:-ml-20 lg:pb-40">
+
+    <div class="w-full flex flex-col items-center text-center lg:hidden mb-12">
+      <span class="text-white text-4xl md:text-6xl font-black uppercase tracking-widest leading-none font-bohme reveal-on-scroll">
+        ABOUT
+      </span>
+      <span class="relative -mt-4 md:-mt-8 text-[#cc007c] font-['Sedgwick_Ave_Display',_cursive] font-extrabold tracking-wider text-7xl md:text-9xl reveal-on-scroll" style="z-index: 2;">
+        DISHA
+      </span>
+    </div>
+
+    <div class="w-full lg:w-1/2 flex items-center justify-center lg:justify-end mb-28 md:mb-40 lg:mb-0 lg:-ml-20 lg:pb-40">
       <div class="relative inline-block">
         <img
           src={kalyaniforwebAsset.src}
           alt="Illustrated version of the Kalyani character"
           width="800"
           height="920"
-          class="w-full h-auto object-cover max-w-sm lg:max-w-md xl:max-w-2xl drop-shadow-[0_0_25px_rgba(222,0,95,0.7)] kalyaniforweb-reveal"
+          class="w-full h-auto object-cover max-w-2xl lg:max-w-5xl xl:max-w-6xl kalyaniforweb-reveal"
         />
-        <span class="block absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 text-[#cc007c] font-['Sedgwick_Ave_Display',_cursive] text-6xl md:text-8xl lg:text-[8rem] font-extrabold tracking-[-0.05em] [-webkit-text-stroke:1px_#fff] drop-shadow-[0_0_15px_rgba(204,0,124,0.4)] z-20 reveal-on-scroll">
+        <span class="inline-block absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 text-[#cc007c] font-['Sedgwick_Ave_Display',_cursive] text-[min(20vw,8rem)] md:text-[min(18vw,12rem)] lg:text-[10rem] font-extrabold tracking-[-0.05em] [-webkit-text-stroke:1px_#fff] drop-shadow-[0_0_10px_rgba(204,0,124,0.3),0_0_25px_rgba(204,0,124,0.15)] z-20 reveal-on-scroll whitespace-nowrap text-center glow-kalyani">
           Kalyani
         </span>
       </div>
@@ -32,11 +42,11 @@ const words = ABOUT_TEXT.split(' ');
 
     <div class="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left text-white relative">
       <div class="w-full max-w-2xl lg:max-w-none">
-        <div class="flex flex-col items-center lg:items-start mb-8 md:mb-16">
-          <span class="text-white text-4xl md:text-6xl font-black uppercase tracking-widest leading-none drop-shadow-[0_0_15px_rgba(222,0,95,0.6)] font-bohme reveal-on-scroll">
+        <div class="hidden lg:flex flex-col items-center lg:items-start mb-8 md:mb-16">
+          <span class="text-white text-4xl md:text-6xl font-black uppercase tracking-widest leading-none font-bohme reveal-on-scroll">
             ABOUT
           </span>
-          <span class="relative -mt-4 md:-mt-8 text-[#cc007c] font-['Sedgwick_Ave_Display',_cursive] font-extrabold tracking-wider text-7xl md:text-9xl [text-shadow:0_0_10px_rgba(204,0,124,0.8),0_0_20px_rgba(204,0,124,0.6),0_0_40px_rgba(204,0,124,0.4),0_0_80px_rgba(204,0,124,0.2)] reveal-on-scroll" style="z-index: 2;">
+          <span class="relative -mt-4 md:-mt-8 text-[#cc007c] font-['Sedgwick_Ave_Display',_cursive] font-extrabold tracking-wider text-7xl md:text-9xl reveal-on-scroll" style="z-index: 2;">
             DISHA
           </span>
         </div>
@@ -71,6 +81,18 @@ const words = ABOUT_TEXT.split(' ');
   .kalyaniforweb-reveal.visible {
     opacity: 1;
     transform: scale(1);
+  }
+  .glow-kalyani::before {
+    content: 'Kalyani';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    filter: blur(10px);
+    -webkit-text-stroke: 4px rgba(204,0,124,0.25);
+    z-index: -1;
   }
 </style>
 
