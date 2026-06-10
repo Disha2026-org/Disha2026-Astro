@@ -3,6 +3,7 @@ import '../index.css';
 import EasterEggVIP from '../components/EasterEggVIP.tsx';
 import eventsBg from '../assets/events_background.webp';
 import kalyaniBg from '../assets/kalyani_background_2.webp';
+import dishaLogo from '../assets/disha_logo.webp';
 import bohmeFont from '../assets/fonts/bohme/Bohme.ttf';
 import myriadRegular from '../assets/fonts/myriad-pro/MYRIADPRO-REGULAR.OTF';
 import myriadBold from '../assets/fonts/myriad-pro/MYRIADPRO-BOLD.OTF';
@@ -36,8 +37,17 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
     <meta name="description" content="College departments compete for a cup through performances and competitions over several days." />
     <title>Disha '26</title>
   </head>
-  <body class="bg-black">
-    <div id="page-freeze-zone">
+  <body class="bg-black overflow-hidden">
+    <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-700">
+      <div class="flex flex-col items-center splash-content">
+        <div class="w-48 h-[2px] bg-white/10 rounded-full overflow-hidden">
+          <div id="splash-progress" class="w-0 h-full bg-[#DE005F] transition-all duration-500 ease-out"></div>
+        </div>
+        <p class="mt-4 text-white/40 text-[10px] tracking-[0.3em] font-bohme uppercase">Disha '26</p>
+      </div>
+    </div>
+
+    <div id="page-freeze-zone" class="opacity-0 transition-opacity duration-1000">
       <slot />
     </div>
     <EasterEggVIP client:idle imageUrls={[eventsBg.src, kalyaniBg.src]} />
@@ -60,7 +70,78 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(222, 0, 95, 1);
   }
-</style>
 
+  @keyframes splashFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .splash-content {
+    animation: splashFadeIn 1s ease-out forwards;
+  }
+</style>
+<script is:inline>
+  // Use is:inline to ensure it runs as early as possible and doesn't get bundled in a way that delays execution
+  (function() {
+    const splash = document.getElementById('splash-screen');
+    const progress = document.getElementById('splash-progress');
+    const content = document.getElementById('page-freeze-zone');
+    const body = document.body;
+
+    if (!splash || !progress || !content) return;
+
+    // Initial progress boost
+    setTimeout(() => {
+      progress.style.width = '30%';
+    }, 100);
+
+    let isLoaded = false;
+    let fontsLoaded = false;
+
+    function checkReady() {
+      if (isLoaded && fontsLoaded) {
+        progress.style.width = '100%';
+        
+        setTimeout(() => {
+          splash.style.opacity = '0';
+          content.style.opacity = '1';
+          body.classList.remove('overflow-hidden');
+          
+          setTimeout(() => {
+            splash.style.visibility = 'hidden';
+            // Dispatch custom event that components can listen to if needed
+            window.dispatchEvent(new CustomEvent('site-ready'));
+          }, 700);
+        }, 500);
+      }
+    }
+
+    window.addEventListener('load', () => {
+      isLoaded = true;
+      progress.style.width = '70%';
+      checkReady();
+    });
+
+    // Handle fonts
+    if (document.fonts) {
+      document.fonts.ready.then(() => {
+        fontsLoaded = true;
+        checkReady();
+      });
+    } else {
+      fontsLoaded = true; // Fallback for older browsers
+      checkReady();
+    }
+
+    // Safety timeout - don't stay on splash forever if something hangs
+    setTimeout(() => {
+      if (!isLoaded || !fontsLoaded) {
+        isLoaded = true;
+        fontsLoaded = true;
+        checkReady();
+      }
+    }, 5000);
+  })();
+</script>
 <script>
 </script>
