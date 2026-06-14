@@ -13,6 +13,9 @@ export default defineConfig({
       rollupOptions: {
         output: {
           manualChunks(id) {
+            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
+              return 'react-vendor';
+            }
             if (id.includes('node_modules/three/') || id.includes('node_modules/@react-three/') || id.includes('node_modules/postprocessing')) {
               return 'three-vendor';
             }
