@@ -61,16 +61,7 @@ export const LiquidChrome = ({
       }
 
       void main() {
-          vec4 col = vec4(0.0);
-          int samples = 0;
-          for (int i = -1; i <= 1; i++){
-              for (int j = -1; j <= 1; j++){
-                  vec2 offset = vec2(float(i), float(j)) * (1.0 / min(uResolution.x, uResolution.y));
-                  col += renderImage(vUv + offset);
-                  samples++;
-              }
-          }
-          gl_FragColor = col / float(samples);
+          gl_FragColor = renderImage(vUv);
       }
     `;
 
@@ -92,21 +83,24 @@ export const LiquidChrome = ({
     });
     const mesh = new Mesh(gl, { geometry, program });
 
+    let containerRect;
+
     function resize() {
-      const scale = 1;
-      renderer.setSize(container.offsetWidth * scale, container.offsetHeight * scale);
+      containerRect = container.getBoundingClientRect();
+      renderer.setSize(containerRect.width, containerRect.height);
       const resUniform = program.uniforms.uResolution.value;
       resUniform[0] = gl.canvas.width;
       resUniform[1] = gl.canvas.height;
       resUniform[2] = gl.canvas.width / gl.canvas.height;
     }
-    window.addEventListener('resize', resize);
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(container);
     resize();
 
     function handleMouseMove(event) {
-      const rect = container.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width;
-      const y = 1 - (event.clientY - rect.top) / rect.height;
+      const x = (event.clientX - containerRect.left) / containerRect.width;
+      const y = 1 - (event.clientY - containerRect.top) / containerRect.height;
       const mouseUniform = program.uniforms.uMouse.value;
       mouseUniform[0] = x;
       mouseUniform[1] = y;
@@ -115,9 +109,8 @@ export const LiquidChrome = ({
     function handleTouchMove(event) {
       if (event.touches.length > 0) {
         const touch = event.touches[0];
-        const rect = container.getBoundingClientRect();
-        const x = (touch.clientX - rect.left) / rect.width;
-        const y = 1 - (touch.clientY - rect.top) / rect.height;
+        const x = (touch.clientX - containerRect.left) / containerRect.width;
+        const y = 1 - (touch.clientY - containerRect.top) / containerRect.height;
         const mouseUniform = program.uniforms.uMouse.value;
         mouseUniform[0] = x;
         mouseUniform[1] = y;
@@ -130,18 +123,32 @@ export const LiquidChrome = ({
     }
 
     let animationId;
+    let siteReady = false;
+
     function update(t) {
       animationId = requestAnimationFrame(update);
       program.uniforms.uTime.value = t * 0.001 * speed;
       renderer.render({ scene: mesh });
     }
-    animationId = requestAnimationFrame(update);
+
+    function onSiteReady() {
+      if (siteReady) return;
+      siteReady = true;
+      animationId = requestAnimationFrame(update);
+    }
+
+    if (window.__siteReady) {
+      onSiteReady();
+    } else {
+      window.addEventListener('site-ready', onSiteReady, { once: true });
+    }
 
     container.appendChild(gl.canvas);
 
     return () => {
       cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('site-ready', onSiteReady);
+      ro.disconnect();
       if (interactive) {
         container.removeEventListener('mousemove', handleMouseMove);
         container.removeEventListener('touchmove', handleTouchMove);
