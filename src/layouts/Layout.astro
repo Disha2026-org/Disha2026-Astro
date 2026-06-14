@@ -19,6 +19,7 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" as="image" href={kalyaniBg.src} />
+    <link rel="preload" as="font" href="https://fonts.gstatic.com/s/sedgwickavedisplay/v23/xfuu0XPgU3jZPUoUo3ScvmPi-NapQ8OxM1c0fec.woff2" crossorigin type="font/woff2" />
     <link rel="preload" as="font" href={bohmeFont} crossorigin type="font/ttf" />
     <link rel="preload" as="font" href={myriadRegular} crossorigin type="font/otf" />
     <link rel="preload" as="font" href={myriadBold} crossorigin type="font/otf" />
@@ -47,7 +48,7 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
       </div>
     </div>
 
-    <div id="page-freeze-zone" class="opacity-0 transition-opacity duration-1000">
+    <div id="page-freeze-zone">
       <slot />
     </div>
     <EasterEggVIP client:idle imageUrls={[eventsBg.src, kalyaniBg.src]} />
@@ -104,7 +105,6 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
         
         setTimeout(() => {
           splash.style.opacity = '0';
-          content.style.opacity = '1';
           body.classList.remove('overflow-hidden');
           
             setTimeout(() => {
@@ -142,6 +142,4 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
       }
     }, 5000);
   })();
-</script>
-<script>
 </script>
