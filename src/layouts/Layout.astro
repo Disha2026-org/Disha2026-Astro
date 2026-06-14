@@ -19,6 +19,7 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" as="image" href={kalyaniBg.src} />
+    <link rel="preload" as="font" href="https://fonts.gstatic.com/s/sedgwickavedisplay/v23/xfuu0XPgU3jZPUoUo3ScvmPi-NapQ8OxM1c0fec.woff2" crossorigin type="font/woff2" />
     <link rel="preload" as="font" href={bohmeFont} crossorigin type="font/ttf" />
     <link rel="preload" as="font" href={myriadRegular} crossorigin type="font/otf" />
     <link rel="preload" as="font" href={myriadBold} crossorigin type="font/otf" />
@@ -41,13 +42,13 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-700">
       <div class="flex flex-col items-center splash-content">
         <div class="w-48 h-[2px] bg-white/10 rounded-full overflow-hidden">
-          <div id="splash-progress" class="w-0 h-full bg-[#DE005F] transition-all duration-500 ease-out"></div>
+          <div id="splash-progress" class="w-full h-full bg-[#DE005F] transition-transform duration-500 ease-out origin-left" style="transform: scaleX(0);"></div>
         </div>
         <p class="mt-4 text-white/40 text-[10px] tracking-[0.3em] font-bohme uppercase">Disha '26</p>
       </div>
     </div>
 
-    <div id="page-freeze-zone" class="opacity-0 transition-opacity duration-1000">
+    <div id="page-freeze-zone">
       <slot />
     </div>
     <EasterEggVIP client:idle imageUrls={[eventsBg.src, kalyaniBg.src]} />
@@ -92,7 +93,7 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
 
     // Initial progress boost
     setTimeout(() => {
-      progress.style.width = '30%';
+      progress.style.transform = 'scaleX(0.3)';
     }, 100);
 
     let isLoaded = false;
@@ -100,25 +101,24 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
 
     function checkReady() {
       if (isLoaded && fontsLoaded) {
-        progress.style.width = '100%';
+        progress.style.transform = 'scaleX(1)';
         
         setTimeout(() => {
           splash.style.opacity = '0';
-          content.style.opacity = '1';
           body.classList.remove('overflow-hidden');
           
-          setTimeout(() => {
+            setTimeout(() => {
             splash.style.visibility = 'hidden';
-            // Dispatch custom event that components can listen to if needed
+            window.__siteReady = true;
             window.dispatchEvent(new CustomEvent('site-ready'));
-          }, 700);
+            }, 700);
         }, 500);
       }
     }
 
-    window.addEventListener('load', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       isLoaded = true;
-      progress.style.width = '70%';
+      progress.style.transform = 'scaleX(0.7)';
       checkReady();
     });
 
@@ -142,6 +142,4 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
       }
     }, 5000);
   })();
-</script>
-<script>
 </script>
