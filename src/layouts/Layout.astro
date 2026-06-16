@@ -8,6 +8,7 @@ import bohmeFont from '../assets/fonts/bohme/Bohme.ttf';
 import myriadRegular from '../assets/fonts/myriad-pro/MYRIADPRO-REGULAR.OTF';
 import myriadBold from '../assets/fonts/myriad-pro/MYRIADPRO-BOLD.OTF';
 import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
+import Analytics from '@vercel/analytics/astro';
 ---
 
 <!doctype html>
@@ -37,6 +38,7 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
     </noscript>
     <meta name="description" content="College departments compete for a cup through performances and competitions over several days." />
     <title>Disha '26</title>
+    <Analytics />
   </head>
   <body class="bg-black overflow-hidden">
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-700">
