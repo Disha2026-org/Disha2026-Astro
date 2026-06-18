@@ -1,8 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react';
 import { Renderer, Program, Mesh, Triangle, RenderTarget } from 'ogl';
 
-// Single vert for both passes — WebGL2 / GLSL ES 3.0 throughout
 const vertexShader = `#version 300 es
 in vec2 position;
 in vec2 uv;
@@ -193,7 +191,6 @@ export default function DitherCanvas({
     const waveFragmentShader = WAVE_FRAGMENT_BASE.replace('__OCTAVES__', octaves);
     const activeMouse        = enableMouseInteraction && !isMobile;
 
-    // ── Renderer ──────────────────────────────────────────────────────────
     const renderer = new Renderer({
       antialias:       false,
       alpha:           true,
@@ -204,10 +201,8 @@ export default function DitherCanvas({
     const gl  = renderer.gl;
     const dpr = renderer.dpr;
 
-    // ── RenderTarget for wave pass ─────────────────────────────────────────
     const target = new RenderTarget(gl, { width: 1, height: 1 });
 
-    // ── Wave program ───────────────────────────────────────────────────────
     const waveProgram = new Program(gl, {
       vertex:   vertexShader,
       fragment: waveFragmentShader,
@@ -228,7 +223,6 @@ export default function DitherCanvas({
       program:  waveProgram,
     });
 
-    // ── Dither program ─────────────────────────────────────────────────────
     const ditherProgram = new Program(gl, {
       vertex:   vertexShader,
       fragment: ditherFragmentShader,
@@ -244,7 +238,6 @@ export default function DitherCanvas({
       program:  ditherProgram,
     });
 
-    // ── Resize ─────────────────────────────────────────────────────────────
     const resize = () => {
       const w = container.offsetWidth;
       const h = container.offsetHeight;
@@ -268,7 +261,6 @@ export default function DitherCanvas({
     container.appendChild(gl.canvas);
     resize();
 
-    // ── Animation state ────────────────────────────────────────────────────
     const animState = {
       time:        0,
       lastTime:    0,
@@ -323,9 +315,7 @@ export default function DitherCanvas({
         u.mousePos.value = [...m];
       }
 
-      // Pass 1 — wave → offscreen RenderTarget
       renderer.render({ scene: waveMesh,   target });
-      // Pass 2 — dither → default framebuffer (screen)
       renderer.render({ scene: ditherMesh });
     };
 
