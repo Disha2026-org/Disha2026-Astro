@@ -1,6 +1,5 @@
 ---
 import DitherCanvas from './ThreeCanvasImpl.jsx';
-
 const REAL_EVENTS_DATA = [
   { id: 1, title: 'MAIN EVENTS', eventsList: ['Face of Disha', 'MX-Techie', 'MX-Disha', 'Fashion Show', 'Street Play', 'Disha Idol', 'Just Dance', 'Wall Painting'] },
   { id: 2, title: 'TECHNICAL', eventsList: ['Ideathon', 'Quiz', 'Technical Essay', 'Prompt Writing', 'Speed Typing'] },
@@ -15,7 +14,6 @@ const REAL_EVENTS_DATA = [
   { id: 11, title: 'MISC', eventsList: ['Troll Making', 'Rubix Cube', 'Short Film', 'Department Magazine', 'Mannequin', 'Trailer Making', 'Reel Making', 'Business (Naptol)', 'Channel Surfing', 'Guess Who?', 'Treasure Hunt', 'Open Debate', 'Jam', 'Integration Bee', 'Spot Commentary', 'Shot Story', 'Picture Perception', 'Theme-Based Photography', 'Movie Recreation'] },
 ];
 ---
-
 <section id="events" class="relative w-full bg-black z-20" style="touch-action: pan-y;">
   <div class="absolute inset-0 z-0 h-full w-full pointer-events-auto">
     <div class="sticky top-0 w-full h-[100dvh] overflow-hidden bg-black">
@@ -37,7 +35,6 @@ const REAL_EVENTS_DATA = [
       <div class="absolute top-0 left-0 w-full h-64 md:h-96 bg-gradient-to-b from-black via-black/60 to-transparent z-10 pointer-events-none"></div>
     </div>
   </div>
-
   <div id="events-scroll-section" class="sticky top-0 z-10 w-full h-[100dvh] flex items-center overflow-hidden pointer-events-none">
     <div class="absolute top-10 md:top-14 left-0 z-50 w-full flex justify-center pointer-events-none px-4">
       <h2 class="flex flex-col md:flex-row items-center md:items-baseline gap-1 md:gap-5">
@@ -46,26 +43,23 @@ const REAL_EVENTS_DATA = [
         </span>
       </h2>
     </div>
-
-    <div id="events-cards-wrapper" class="flex items-center h-full w-max px-[5vw] gap-6 md:gap-12 mt-28 md:mt-32 will-change-transform">
+    <div id="events-cards-wrapper" class="flex items-center h-full w-max px-[5vw] gap-6 md:gap-12 mt-28 md:mt-32">
       {REAL_EVENTS_DATA.map((event) => (
         <div
           key={event.id}
-          class="event-card pointer-events-auto w-[85vw] sm:w-[60vw] md:w-[45vw] lg:w-[32vw] h-[70vh] flex flex-col bg-black/60 border border-white/10 rounded-none p-6 md:p-10 shrink-0 shadow-none md:shadow-[0_0_50px_rgba(0,0,0,0.5)] transform-gpu relative overflow-hidden"
+          class="event-card pointer-events-auto w-[85vw] sm:w-[60vw] md:w-[45vw] lg:w-[32vw] h-[70vh] flex flex-col bg-black/60 border border-white/10 rounded-none p-6 md:p-10 shrink-0 shadow-none md:shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden"
         >
           <div class="shrink-0 mb-6 w-full flex justify-center">
             <h3 class="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-wider text-[#DE005F] break-words text-center font-bohme [text-shadow:0_0_15px_#DE005F]">
               {event.title}
             </h3>
           </div>
-
           <div class="flex-grow overflow-y-auto overflow-x-hidden custom-scrollbar pr-2 relative w-full">
             <div class="relative flex items-center justify-center gap-3 mb-6 sticky top-0 z-20 pt-2 pb-6 -mt-2 w-full">
               <div class="absolute inset-0 -mx-6 bg-gradient-to-b from-black/90 via-black/50 to-transparent pointer-events-none"></div>
               <span class="relative z-10 h-px flex-grow bg-gradient-to-r from-transparent to-[#DE005F]"></span>
               <span class="relative z-10 h-px flex-grow bg-gradient-to-l from-transparent to-[#DE005F]/50"></span>
             </div>
-
             <div class="flex flex-col w-full">
               {event.eventsList.map((item, index) => (
                 <div key={index} class="group flex items-start gap-4 py-3 md:py-4 border-b border-white/10 hover:border-white/30 transition-colors w-full">
@@ -83,173 +77,189 @@ const REAL_EVENTS_DATA = [
       ))}
     </div>
   </div>
-
   <div id="events-spacer" class="w-full pointer-events-none"></div>
 </section>
 
 <style>
+  /* Promote wrapper to its own compositor layer once, avoid promote-3d overhead */
   #events-cards-wrapper {
-    backface-visibility: hidden;
-    transform-style: preserve-3d;
+    will-change: transform;
+    /* GPU layer without preserve-3d overhead */
+    transform: translateZ(0);
   }
 </style>
 
 <script>
-  (function () {
-    var section = document.getElementById('events-scroll-section');
-    var wrapper = document.getElementById('events-cards-wrapper');
-    var spacer = document.getElementById('events-spacer');
-    if (!section || !wrapper || !spacer) return;
+(function () {
+  'use strict';
 
-    var maxScroll = 0;
-    var sectionTop = -1;
+  var wrapper = document.getElementById('events-cards-wrapper');
+  var spacer  = document.getElementById('events-spacer');
+  if (!wrapper || !spacer) return;
 
-    var targetX = 0;
-    var currentX = 0;
-    var rafId = null;
-    var lastTickTime = 0;
+  /* ─── state ─────────────────────────────────────────────────── */
+  var sectionTop  = 0;   // px from document top — set once per layout
+  var maxScroll   = 0;   // total horizontal travel
+  var displayX    = 0;   // what's currently on screen
+  var rafId       = null;
 
-    var isSwipingH = false;
-    var touchStartX = 0;
-    var touchStartY = 0;
-    var touchBaseX = 0;
-    var lastTouchX = 0;
-    var lastTouchTime = 0;
-    var velocityX = 0;
-    
-    function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+  /* touch state */
+  var touchActive = false;
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var touchBaseX  = 0;
+  var prevTouchX  = 0;
+  var prevTouchT  = 0;
+  var velX        = 0;   // px / ms
 
-    function getScrollAmount() {
-      return Math.max(0, wrapper.scrollWidth - window.innerWidth);
+  /* ─── helpers ────────────────────────────────────────────────── */
+  function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+  /* Read layout metrics without touching the wrapper transform —
+     offsetTop chain avoids forced reflows caused by getBoundingClientRect. */
+  function getSectionTop() {
+    var el = wrapper.parentElement; // #events-scroll-section
+    if (!el) return 0;
+    var parent = el.parentElement;  // #events section
+    if (!parent) return 0;
+    var top = 0;
+    var node = parent;
+    while (node && node !== document.body) {
+      top += node.offsetTop;
+      node = node.offsetParent;
     }
+    return top;
+  }
 
-    function applyNow() {
-      wrapper.style.transform = 'translate3d(' + (-currentX) + 'px,0,0)';
+  function applyTransform(x) {
+    /* Only one CSS property on a composited layer — no layout, no paint. */
+    wrapper.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
+  }
+
+  /* ─── setup (called on load + resize, NOT on scroll) ─────────── */
+  function setup() {
+    maxScroll  = Math.max(0, wrapper.scrollWidth - window.innerWidth);
+    sectionTop = getSectionTop();
+    spacer.style.height = maxScroll + 'px';
+    /* Snap display to current scroll position immediately. */
+    displayX = clamp(window.scrollY - sectionTop, 0, maxScroll);
+    applyTransform(displayX);
+  }
+
+  /* ─── RAF loop — only runs when there's work to do ───────────── */
+  var FRICTION = 0.88; // velocity multiplier per 16.67 ms frame
+
+  function loop(now) {
+    rafId = null;
+
+    if (touchActive) return; /* Touch move drives applyTransform directly */
+
+    /* Apply fling momentum (mobile swipe) */
+    if (Math.abs(velX) > 0.05) {
+      displayX = clamp(displayX + velX * 16.67, 0, maxScroll);
+      velX *= FRICTION;
+      applyTransform(displayX);
+      /* Sync page scroll so the two stay in step */
+      window.scrollTo({ top: sectionTop + displayX, behavior: 'instant' });
+      rafId = requestAnimationFrame(loop);
     }
-    
-    function setup() {
-      var eventsSection = section.parentElement;
-      maxScroll = getScrollAmount();
-      sectionTop = eventsSection.getBoundingClientRect().top + window.scrollY;
-      targetX = clamp(window.scrollY - sectionTop, 0, maxScroll);
-      currentX = targetX;
-      spacer.style.height = maxScroll + 'px';
-      applyNow();
-    }
+  }
 
-    var BASE = 0.88;
+  function startLoop() {
+    if (!rafId) rafId = requestAnimationFrame(loop);
+  }
 
-    function tick(now) {
-      var dt = now - lastTickTime;
-      lastTickTime = now;
-      if (dt <= 0 || dt > 100) dt = 16.67;
-
-      var running = false;
-
-      if (velocityX !== 0) {
-        velocityX *= Math.pow(0.94, dt / 16.67);
-        if (Math.abs(velocityX) >= 0.01) {
-          currentX = clamp(currentX + velocityX * dt, 0, maxScroll);
-          targetX = currentX;
-          running = true;
-        } else {
-          velocityX = 0;
-        }
+  /* ─── Scroll handler — read-only, batched via rAF ────────────── */
+  var scrollQueued = false;
+  function onScroll() {
+    if (touchActive || scrollQueued) return;
+    scrollQueued = true;
+    requestAnimationFrame(function () {
+      scrollQueued = false;
+      var target = clamp(window.scrollY - sectionTop, 0, maxScroll);
+      if (target !== displayX) {
+        displayX = target;
+        applyTransform(displayX);
       }
+    });
+  }
 
-      var diff = targetX - currentX;
-      if (Math.abs(diff) >= 0.25) {
-        var factor = 1 - Math.pow(BASE, dt / 16.67);
-        currentX += diff * factor;
-        running = true;
-      }
+  /* ─── Touch handlers ─────────────────────────────────────────── */
+  function onTouchStart(e) {
+    var t = e.touches[0];
+    touchStartX  = t.clientX;
+    touchStartY  = t.clientY;
+    prevTouchX   = t.clientX;
+    prevTouchT   = performance.now();
+    touchBaseX   = displayX;
+    velX         = 0;
+    touchActive  = false; /* determined after first move */
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+  }
 
-      if (running) {
-        applyNow();
-      }
+  function onTouchMove(e) {
+    var t   = e.touches[0];
+    var dx  = touchStartX - t.clientX;
+    var dy  = touchStartY - t.clientY;
 
-      if (running) {
-        rafId = requestAnimationFrame(tick);
-      } else {
-        rafId = null;
-      }
+    if (!touchActive) {
+      /* Decide axis on first significant movement */
+      if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
+      if (Math.abs(dy) >= Math.abs(dx)) return; /* vertical — let browser handle */
+      touchActive = true;
     }
 
-    function startLoop() {
-      if (!rafId) {
-        lastTickTime = performance.now();
-        rafId = requestAnimationFrame(tick);
-      }
-    }
+    /* Prevent native vertical scroll only when we own this gesture */
+    if (e.cancelable) e.preventDefault();
 
-    function onScroll() {
-      if (sectionTop === -1 || isSwipingH) return;
-      targetX = clamp(window.scrollY - sectionTop, 0, maxScroll);
-      currentX = targetX;
-      applyNow();
-    }
+    var now  = performance.now();
+    var dt   = now - prevTouchT;
+    if (dt > 0) velX = (prevTouchX - t.clientX) / dt; /* px / ms */
+    prevTouchX = t.clientX;
+    prevTouchT = now;
 
-    function handleTouchStart(e) {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      lastTouchX = touchStartX;
-      lastTouchTime = performance.now();
-      velocityX = 0;
-      isSwipingH = false;
-      touchBaseX = currentX;
+    displayX = clamp(touchBaseX + dx, 0, maxScroll);
+    applyTransform(displayX);
+  }
 
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-      currentX = targetX;
-    }
+  function onTouchEnd() {
+    if (!touchActive) return;
+    touchActive = false;
 
-    function handleTouchMove(e) {
-      var cx = e.touches[0].clientX;
-      var dx = touchStartX - cx;
-      var dy = touchStartY - e.touches[0].clientY;
+    /* Sync page scroll then kick off momentum */
+    window.scrollTo({ top: sectionTop + displayX, behavior: 'instant' });
 
-      if (!isSwipingH) {
-        if (Math.abs(dx) > 5 && Math.abs(dx) > Math.abs(dy)) {
-          isSwipingH = true;
-        } else {
-          return;
-        }
-      }
-
-      if (e.cancelable) e.preventDefault();
-
-      var now = performance.now();
-      var dt = now - lastTouchTime;
-      if (dt > 0) velocityX = (lastTouchX - cx) / dt;
-      lastTouchX = cx;
-      lastTouchTime = now;
-
-      targetX = clamp(touchBaseX + dx, 0, maxScroll);
-      currentX = targetX;
-      applyNow();
-    }
-
-    function handleTouchEnd() {
-      if (!isSwipingH) return;
-
-      window.scrollTo({ top: sectionTop + currentX, left: 0, behavior: 'instant' });
-
+    /* Convert px/ms → px/frame (≈16.67 ms) and apply initial momentum */
+    if (Math.abs(velX) > 0.05) {
+      velX *= 16.67; /* scale to per-frame units */
       startLoop();
-
-      setTimeout(function () { isSwipingH = false; }, 60);
     }
+  }
 
-    var ro = new ResizeObserver(setup);
-    ro.observe(document.body);
+  /* ─── Wire up ────────────────────────────────────────────────── */
+  var section = (wrapper.parentElement && wrapper.parentElement.parentElement);
 
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  if (section) {
+    section.addEventListener('touchstart', onTouchStart, { passive: true });
+    section.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    section.addEventListener('touchend',   onTouchEnd,   { passive: true });
+    section.addEventListener('touchcancel',onTouchEnd,   { passive: true });
+  }
+
+  /* Debounced resize — avoid hammering setup() */
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(setup, 150);
+  }, { passive: true });
+
+  /* Run setup after layout is stable */
+  if (document.readyState === 'complete') {
     setup();
-    window.addEventListener('resize', setup);
-    document.addEventListener('scroll', onScroll, { passive: true });
-
-    var cardsSection = section.parentElement;
-    if (cardsSection) {
-      cardsSection.addEventListener('touchstart', handleTouchStart, { passive: true });
-      cardsSection.addEventListener('touchmove', handleTouchMove, { passive: false });
-      cardsSection.addEventListener('touchend', handleTouchEnd, { passive: true });
-    }
-  })();
+  } else {
+    window.addEventListener('load', setup, { once: true });
+  }
+})();
 </script>
