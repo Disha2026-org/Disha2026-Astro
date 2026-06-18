@@ -132,7 +132,7 @@ void main() {
   color.rgb      += threshold * stepSize;
   color.rgb       = clamp(color.rgb, 0.0, 1.0);
   color.rgb       = floor(color.rgb * denom + 0.5) / denom;
-  color.rgb       = min(color.rgb, vec3(max(source.r, max(source.g, source.b))));
+  color.rgb       = min(color.rgb, source);
 
   fragColor = color;
 }
