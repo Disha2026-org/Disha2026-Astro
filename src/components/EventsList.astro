@@ -185,6 +185,8 @@ const REAL_EVENTS_DATA = [
     function onScroll() {
       if (sectionTop === -1 || isSwipingH) return;
       targetX = clamp(window.scrollY - sectionTop, 0, maxScroll);
+      currentX = targetX;
+      applyNow();
       startLoop();
     }
 
