@@ -84,7 +84,6 @@ const REAL_EVENTS_DATA = [
   /* Promote wrapper to its own compositor layer once, avoid promote-3d overhead */
   #events-cards-wrapper {
     will-change: transform;
-    /* GPU layer without preserve-3d overhead */
     transform: translateZ(0);
   }
 </style>
@@ -97,12 +96,28 @@ const REAL_EVENTS_DATA = [
   var spacer  = document.getElementById('events-spacer');
   if (!wrapper || !spacer) return;
 
+  var section = document.getElementById('events');
+  if (!section) return;
+
   /* ─── state ─────────────────────────────────────────────────── */
-  var sectionTop  = 0;   // px from document top — set once per layout
-  var maxScroll   = 0;   // total horizontal travel
-  var displayX    = 0;   // what's currently on screen
+  var sectionTop  = 0;     // px from document top — set on every (settled) layout pass
+  var maxScroll   = 0;     // total horizontal travel of the wrapper
+  var stretch     = 1;     // K — vertical-scroll-px per horizontal-px (>=1)
+  var displayX    = 0;     // what's currently rendered
   var rafId       = null;
-  var leadIn      = 0;   // px of vertical scroll to absorb before horizontal motion starts
+
+  /* Vertical scroll distance allocated per card, as a fraction of the
+     viewport height — this is what gives each card (including the first)
+     enough scroll "runway" that a single wheel/trackpad tick can't blow
+     through it. Tuned, not arbitrary-feeling: 1.0 == "one viewport-height
+     of scroll per card", matching the dwell time of a normal vertically
+     stacked section. */
+  var SCROLL_PER_CARD_VH = 0.85;
+
+  /* gesture guards — block re-measurement mid-interaction so values never
+     drift out from under an in-progress scroll/touch (this was the source
+     of the "fighting" / jump bugs) */
+  var gestureActive = false; // true while touch-drag or fling momentum is live
 
   /* touch state */
   var touchActive = false;
@@ -111,60 +126,66 @@ const REAL_EVENTS_DATA = [
   var touchBaseX  = 0;
   var prevTouchX  = 0;
   var prevTouchT  = 0;
-  var velX        = 0;   // px / ms
+  var velX        = 0; // px / ms
 
   /* ─── helpers ────────────────────────────────────────────────── */
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 
-  /* Read the section's document-relative top accurately. offsetTop chains
-     break across position:sticky/absolute ancestors (this layout has both),
-     silently producing a wrong value. getBoundingClientRect is reliable
-     regardless of positioning context; called only in setup(), not on
-     every scroll, so the single reflow it costs is negligible. */
+  /* getBoundingClientRect is reliable across the sticky/absolute ancestor
+     chain in this layout (offsetTop is not). Only called from setup(). */
   function getSectionTop() {
-    var section = wrapper.closest('#events');
-    if (!section) return 0;
     return section.getBoundingClientRect().top + window.scrollY;
   }
 
   function applyTransform(x) {
-    /* Only one CSS property on a composited layer — no layout, no paint. */
     wrapper.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
   }
 
-  /* ─── setup (called on load + resize, NOT on scroll) ─────────── */
+  /* ─── setup — recomputes geometry; never called mid-gesture ──── */
   function setup() {
-    maxScroll  = Math.max(0, wrapper.scrollWidth - window.innerWidth);
+    if (gestureActive) return;
+
+    maxScroll = Math.max(0, wrapper.scrollWidth - document.documentElement.clientWidth);
     sectionTop = getSectionTop();
 
-    /* Hold position for the first half of the section's pinned duration —
-       lets the user finish reading the heading before horizontal motion
-       begins. */
-    leadIn = window.innerHeight * 0.675;
+    /* Tie the stretch factor to the viewport: allocate
+       (cardCount * viewportHeight * SCROLL_PER_CARD_VH) px of vertical
+       scroll to traverse maxScroll px of horizontal travel. This keeps
+       per-card dwell time felt-consistent across screen sizes — a wide
+       monitor (more horizontal travel relative to height) gets a smaller
+       stretch, a narrow/tall viewport gets a larger one.
+       Clamped to >= 1 so we only ever stretch, never compress (compressing
+       would reintroduce the original "card skipped" bug at 1:1). */
+    var cardCount = wrapper.children.length || 1;
+    var viewportH = document.documentElement.clientHeight;
+    var desiredSpacerHeight = cardCount * viewportH * SCROLL_PER_CARD_VH;
+    stretch = maxScroll > 0 ? Math.max(1, desiredSpacerHeight / maxScroll) : 1;
 
-    spacer.style.height = (maxScroll + leadIn) + 'px';
+    /* No artificial lead-in. `position: sticky` already guarantees the
+       card is fully visible the instant the section pins — horizontal
+       motion can start immediately without skipping any content. */
+    spacer.style.height = (maxScroll * stretch) + 'px';
 
-    /* Snap display to current scroll position immediately. */
-    displayX = clamp(window.scrollY - sectionTop - leadIn, 0, maxScroll);
+    displayX = clamp((window.scrollY - sectionTop) / stretch, 0, maxScroll);
     applyTransform(displayX);
   }
 
-  /* ─── RAF loop — only runs when there's work to do ───────────── */
-  var FRICTION = 0.88; // velocity multiplier per 16.67 ms frame
+  /* ─── RAF loop — fling momentum only ──────────────────────────── */
+  var FRICTION = 0.88;
 
-  function loop(now) {
+  function loop() {
     rafId = null;
 
-    if (touchActive) return; /* Touch move drives applyTransform directly */
+    if (touchActive) return;
 
-    /* Apply fling momentum (mobile swipe) */
     if (Math.abs(velX) > 0.05) {
       displayX = clamp(displayX + velX * 16.67, 0, maxScroll);
       velX *= FRICTION;
       applyTransform(displayX);
-      /* Sync page scroll so the two stay in step */
-      window.scrollTo({ top: sectionTop + leadIn + displayX, behavior: 'instant' });
+      window.scrollTo({ top: sectionTop + displayX * stretch, behavior: 'instant' });
       rafId = requestAnimationFrame(loop);
+    } else {
+      gestureActive = false; // momentum settled — safe to re-measure again
     }
   }
 
@@ -172,14 +193,14 @@ const REAL_EVENTS_DATA = [
     if (!rafId) rafId = requestAnimationFrame(loop);
   }
 
-  /* ─── Scroll handler — read-only, batched via rAF ────────────── */
+  /* ─── Scroll handler — read-only, batched via rAF ─────────────── */
   var scrollQueued = false;
   function onScroll() {
     if (touchActive || scrollQueued) return;
     scrollQueued = true;
     requestAnimationFrame(function () {
       scrollQueued = false;
-      var target = clamp(window.scrollY - sectionTop - leadIn, 0, maxScroll);
+      var target = clamp((window.scrollY - sectionTop) / stretch, 0, maxScroll);
       if (target !== displayX) {
         displayX = target;
         applyTransform(displayX);
@@ -187,37 +208,42 @@ const REAL_EVENTS_DATA = [
     });
   }
 
-  /* ─── Touch handlers ─────────────────────────────────────────── */
+  /* ─── Touch handlers — drive displayX directly, same coord space
+         as the wheel/scroll path above (shared sectionTop/maxScroll) ─ */
   function onTouchStart(e) {
     var t = e.touches[0];
-    touchStartX  = t.clientX;
-    touchStartY  = t.clientY;
-    prevTouchX   = t.clientX;
-    prevTouchT   = performance.now();
-    touchBaseX   = displayX;
-    velX         = 0;
-    touchActive  = false; /* determined after first move */
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    prevTouchX  = t.clientX;
+    prevTouchT  = performance.now();
+    touchBaseX  = displayX;
+    velX        = 0;
+    touchActive = false; // axis decided on first move
+    gestureActive = true;
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
   }
 
   function onTouchMove(e) {
-    var t   = e.touches[0];
-    var dx  = touchStartX - t.clientX;
-    var dy  = touchStartY - t.clientY;
+    var t  = e.touches[0];
+    var dx = touchStartX - t.clientX;
+    var dy = touchStartY - t.clientY;
 
     if (!touchActive) {
-      /* Decide axis on first significant movement */
       if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
-      if (Math.abs(dy) >= Math.abs(dx)) return; /* vertical — let browser handle */
+      if (Math.abs(dy) >= Math.abs(dx)) {
+        /* vertical gesture — let the browser scroll natively; our scroll
+           handler keeps displayX in sync via sectionTop/maxScroll */
+        gestureActive = false;
+        return;
+      }
       touchActive = true;
     }
 
-    /* Prevent native vertical scroll only when we own this gesture */
     if (e.cancelable) e.preventDefault();
 
-    var now  = performance.now();
-    var dt   = now - prevTouchT;
-    if (dt > 0) velX = (prevTouchX - t.clientX) / dt; /* px / ms */
+    var now = performance.now();
+    var dt  = now - prevTouchT;
+    if (dt > 0) velX = (prevTouchX - t.clientX) / dt;
     prevTouchX = t.clientX;
     prevTouchT = now;
 
@@ -226,43 +252,54 @@ const REAL_EVENTS_DATA = [
   }
 
   function onTouchEnd() {
-    if (!touchActive) return;
+    if (!touchActive) { gestureActive = false; return; }
     touchActive = false;
 
-    /* Sync page scroll then kick off momentum */
-    window.scrollTo({ top: sectionTop + leadIn + displayX, behavior: 'instant' });
+    window.scrollTo({ top: sectionTop + displayX * stretch, behavior: 'instant' });
 
-    /* Convert px/ms → px/frame (≈16.67 ms) and apply initial momentum */
     if (Math.abs(velX) > 0.05) {
-      velX *= 16.67; /* scale to per-frame units */
-      startLoop();
+      velX *= 16.67;
+      startLoop(); // gestureActive stays true until momentum settles
+    } else {
+      gestureActive = false;
     }
   }
 
-  /* ─── Wire up ────────────────────────────────────────────────── */
-  var section = (wrapper.parentElement && wrapper.parentElement.parentElement);
-
+  /* ─── Wire up ───────────────────────────────────────────────── */
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  if (section) {
-    section.addEventListener('touchstart', onTouchStart, { passive: true });
-    section.addEventListener('touchmove',  onTouchMove,  { passive: false });
-    section.addEventListener('touchend',   onTouchEnd,   { passive: true });
-    section.addEventListener('touchcancel',onTouchEnd,   { passive: true });
-  }
+  section.addEventListener('touchstart',  onTouchStart, { passive: true });
+  section.addEventListener('touchmove',   onTouchMove,  { passive: false });
+  section.addEventListener('touchend',    onTouchEnd,   { passive: true });
+  section.addEventListener('touchcancel', onTouchEnd,   { passive: true });
 
-  /* Debounced resize — avoid hammering setup() */
+  /* ResizeObserver instead of window 'resize': fires only on genuine box
+     size changes of #events itself, and is suppressed during gestures —
+     this removes the mobile address-bar-collapse re-measure loop that
+     caused the scroll-fighting/jump bug. */
   var resizeTimer;
-  window.addEventListener('resize', function () {
+  var ro = new ResizeObserver(function () {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(setup, 150);
-  }, { passive: true });
+  });
+  ro.observe(section);
 
-  /* Run setup after layout is stable */
+  /* Run setup after layout + fonts are stable so scrollWidth is measured
+     against final geometry, not a pre-reflow DOM. */
+  function ready() {
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        requestAnimationFrame(function () { requestAnimationFrame(setup); });
+      });
+    } else {
+      requestAnimationFrame(function () { requestAnimationFrame(setup); });
+    }
+  }
+
   if (document.readyState === 'complete') {
-    setup();
+    ready();
   } else {
-    window.addEventListener('load', setup, { once: true });
+    window.addEventListener('load', ready, { once: true });
   }
 })();
 </script>
