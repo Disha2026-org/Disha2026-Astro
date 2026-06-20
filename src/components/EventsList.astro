@@ -118,6 +118,8 @@ const REAL_EVENTS_DATA = [
      drift out from under an in-progress scroll/touch (this was the source
      of the "fighting" / jump bugs) */
   var gestureActive = false; // true while touch-drag or fling momentum is live
+  var pendingSetup  = false; // true when a re-measure is deferred because we're mid-scroll
+  var suppressingScroll = false; // true while window.scrollTo() is being called internally
 
   /* touch state */
   var touchActive = false;
@@ -141,11 +143,24 @@ const REAL_EVENTS_DATA = [
     wrapper.style.transform = 'translate3d(' + (-x) + 'px,0,0)';
   }
 
+  function insidePin() {
+    var sy = window.scrollY;
+    return sy >= sectionTop - 1 && sy <= sectionTop + maxScroll * stretch + 1;
+  }
+
   /* ─── setup — recomputes geometry; never called mid-gesture ──── */
   function setup() {
-    if (gestureActive) return;
+    if (gestureActive || insidePin()) { pendingSetup = true; return; }
+    pendingSetup = false;
 
-    maxScroll = Math.max(0, wrapper.scrollWidth - document.documentElement.clientWidth);
+    var lastCard = wrapper.lastElementChild;
+    if (lastCard) {
+      var lastCardRect = lastCard.getBoundingClientRect();
+      var naturalRight = lastCardRect.right + displayX;
+      maxScroll = Math.max(0, naturalRight - document.documentElement.clientWidth);
+    } else {
+      maxScroll = 0;
+    }
     sectionTop = getSectionTop();
 
     /* Tie the stretch factor to the viewport: allocate
@@ -178,11 +193,15 @@ const REAL_EVENTS_DATA = [
 
     if (touchActive) return;
 
+    if (pendingSetup && !insidePin()) { setup(); if (pendingSetup) return; }
+
     if (Math.abs(velX) > 0.05) {
       displayX = clamp(displayX + velX * 16.67, 0, maxScroll);
       velX *= FRICTION;
       applyTransform(displayX);
+      suppressingScroll = true;
       window.scrollTo({ top: sectionTop + displayX * stretch, behavior: 'instant' });
+      suppressingScroll = false;
       rafId = requestAnimationFrame(loop);
     } else {
       gestureActive = false; // momentum settled — safe to re-measure again
@@ -196,10 +215,16 @@ const REAL_EVENTS_DATA = [
   /* ─── Scroll handler — read-only, batched via rAF ─────────────── */
   var scrollQueued = false;
   function onScroll() {
-    if (touchActive || scrollQueued) return;
+    if (touchActive || scrollQueued || suppressingScroll) return;
     scrollQueued = true;
     requestAnimationFrame(function () {
       scrollQueued = false;
+
+      if (pendingSetup && !gestureActive && !insidePin()) {
+        setup();
+        if (pendingSetup) return;
+      }
+
       var target = clamp((window.scrollY - sectionTop) / stretch, 0, maxScroll);
       if (target !== displayX) {
         displayX = target;
@@ -255,7 +280,9 @@ const REAL_EVENTS_DATA = [
     if (!touchActive) { gestureActive = false; return; }
     touchActive = false;
 
+    suppressingScroll = true;
     window.scrollTo({ top: sectionTop + displayX * stretch, behavior: 'instant' });
+    suppressingScroll = false;
 
     if (Math.abs(velX) > 0.05) {
       velX *= 16.67;
@@ -273,16 +300,23 @@ const REAL_EVENTS_DATA = [
   section.addEventListener('touchend',    onTouchEnd,   { passive: true });
   section.addEventListener('touchcancel', onTouchEnd,   { passive: true });
 
-  /* ResizeObserver instead of window 'resize': fires only on genuine box
-     size changes of #events itself, and is suppressed during gestures —
-     this removes the mobile address-bar-collapse re-measure loop that
-     caused the scroll-fighting/jump bug. */
-  var resizeTimer;
-  var ro = new ResizeObserver(function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(setup, 150);
-  });
-  ro.observe(section);
+  /* Unified re-measure trigger — fires on genuine box-size changes of the
+     cards wrapper (never JS-mutated, so no feedback loop) and on viewport
+     resize. Both paths share the same debounced guard that defers execution
+     when the user is mid-scroll through the pin region. */
+  var remeasureTimer;
+  function scheduleRemeasure() {
+    clearTimeout(remeasureTimer);
+    remeasureTimer = setTimeout(function () {
+      if (gestureActive || insidePin()) { pendingSetup = true; return; }
+      setup();
+    }, 150);
+  }
+
+  window.addEventListener('resize', scheduleRemeasure, { passive: true });
+
+  var ro = new ResizeObserver(scheduleRemeasure);
+  ro.observe(wrapper);
 
   /* Run setup after layout + fonts are stable so scrollWidth is measured
      against final geometry, not a pre-reflow DOM. */
