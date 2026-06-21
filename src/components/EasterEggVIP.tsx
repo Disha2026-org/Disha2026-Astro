@@ -255,7 +255,7 @@ export default function EasterEggVIP({ imageUrls = [] }: EasterEggVIPProps) {
           await navigator.share({
             files: [file],
             title: "Disha '26",
-            text: "Here's my Disha 2026 VIP Pass, where's yours?",
+            text: "Here's my Disha '26 VIP Pass, where's yours?\nCome get yours now, at disha26.cet.ac.in\n#Disha26VIP #DishaCET",
           })
           return
         }
