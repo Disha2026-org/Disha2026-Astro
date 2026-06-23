@@ -1,2 +1,28 @@
-User-agent: *
+# 1. Allow legitimate search engine crawlers for SEO
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 10
+
+User-agent: Applebot
+Allow: /
+
+# 2. Block aggressive AI training scrapers and non-essential SEO bots
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-Web
+User-agent: PerplexityBot
+User-agent: CCBot
+User-agent: AhrefsBot
+User-agent: SemrushBot
+User-agent: DotBot
+User-agent: Rogerbot
+User-agent: PetalBot
 Disallow: /
+
+# 3. General rule for standard bots
+User-agent: *
+Allow: /
