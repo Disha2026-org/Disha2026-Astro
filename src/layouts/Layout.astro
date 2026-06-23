@@ -10,6 +10,16 @@ import bohmeFont from '../assets/fonts/bohme/Bohme.ttf';
 import myriadRegular from '../assets/fonts/myriad-pro/MYRIADPRO-REGULAR.OTF';
 import myriadBold from '../assets/fonts/myriad-pro/MYRIADPRO-BOLD.OTF';
 import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Disha '26",
+  description = "College departments compete for a cup through performances and competitions over several days.",
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -37,8 +47,8 @@ import myriadSemibold from '../assets/fonts/myriad-pro/MYRIADPRO-SEMIBOLD.OTF';
       <link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
       <link href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave&family=Sedgwick+Ave+Display&display=swap" rel="stylesheet" />
     </noscript>
-    <meta name="description" content="College departments compete for a cup through performances and competitions over several days." />
-    <title>Disha '26</title>
+    <meta name="description" content={description} />
+    <title>{title}</title>
     <Analytics />
     <SpeedInsights />
   </head>
