@@ -1,6 +1,5 @@
 ---
 import dishaLogo from '../assets/disha_logo.webp';
-import CountdownTimer from './CountdownTimer.astro';
 import LiquidChrome from './LiquidChrome';
 ---
 
@@ -85,16 +84,12 @@ import LiquidChrome from './LiquidChrome';
       </div>
     </div>
 
-    <div id="timer-wrapper" class="-mt-6 md:-mt-8 bg-[#1a1525]/90 px-6 py-3 md:px-8 md:py-4 rounded-full border border-white/5 relative z-10 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
-      <CountdownTimer targetDate="2026-07-17T12:00:00" />
-    </div>
-
   </main>
 
   <div class="absolute bottom-[16%] md:bottom-[10%] lg:bottom-[8%] z-20 w-[120%] -ml-[10%] overflow-hidden whitespace-nowrap py-4 md:py-6 bg-black/80 border-y-[3px] -rotate-2 shadow-2xl pointer-events-none">
     <div class="inline-flex gap-2 md:gap-5 pr-12 md:pr-24 ticker-track">
       {Array.from({ length: 12 }, (_, i) => (
-        <span key={i} class="text-xl md:text-3xl lg:text-4xl font-black uppercase tracking-wider font-bohme shrink-0">THE BIGGEST <span class="text-[#DE005F] ticker-status [text-shadow:0_0_15px_#DE005F]">FRESHERS FEST</span> OF CET <span class="text-[#DE005F] [text-shadow:0_0_15px_#DE005F]">IS LIVE NOW!</span>   ꞏ</span>
+        <span key={i} class="text-xl md:text-3xl lg:text-4xl font-black uppercase tracking-wider font-bohme shrink-0">THE BIGGEST <span class="text-[#DE005F] [text-shadow:0_0_15px_#DE005F]">FRESHERS FEST</span> OF CET!   ꞏ</span>
       ))}
     </div>
   </div>
@@ -222,14 +217,6 @@ import LiquidChrome from './LiquidChrome';
     );
     observer.observe(heroEl);
   }
-
-  document.addEventListener('timer:complete', function () {
-    var timerWrapper = document.getElementById('timer-wrapper');
-    if (timerWrapper) timerWrapper.style.display = 'none';
-    document.querySelectorAll('.ticker-status').forEach(function (el) {
-      el.textContent = 'IS LIVE!';
-    });
-  });
 
   const scrollProgress = document.getElementById('scroll-progress');
   if (scrollProgress) {
