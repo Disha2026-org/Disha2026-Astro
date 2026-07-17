@@ -69,9 +69,9 @@ import LiquidChrome from './LiquidChrome';
   </div>
 
   <main class="relative z-20 flex flex-col items-center justify-center grow px-4 text-center -mt-16 md:-mt-16 lg:-mt-24">
-    <div class="relative mb-6 md:mb-10 w-fit mx-auto whitespace-nowrap z-0 flex items-center justify-center">
+    <div class="relative mb-2 md:mb-3 w-fit mx-auto whitespace-nowrap z-0 flex items-center justify-center">
       <div class="absolute -inset-x-24 -inset-y-12 bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,1)_45%,_transparent_85%)] blur-2xl z-10 pointer-events-none"></div>
-      <div class="relative z-90 mb-6 md:mb-10 w-fit mx-auto whitespace-nowrap z-0 grid place-items-center">
+      <div class="relative z-90 mb-2 md:mb-3 w-fit mx-auto whitespace-nowrap z-0 grid place-items-center">
   
         <h1 aria-hidden="true" class="col-start-1 row-start-1 text-[#cc007c] [-webkit-text-stroke:8px_#000] [text-shadow:0_0_40px_rgba(0,0,0,1),0_0_80px_rgba(0,0,0,1)] text-[6.5rem] md:text-[10rem] lg:text-[12rem] xl:text-[14rem] font-extrabold tracking-tighter font-['Sedgwick_Ave_Display',_cursive] pointer-events-none">
           DIsha '26
@@ -84,6 +84,9 @@ import LiquidChrome from './LiquidChrome';
       </div>
     </div>
 
+    <p class="hero-tagline relative z-30 font-bohme text-white text-[1.5rem] md:text-[2.3rem] lg:text-[2.8rem] xl:text-[3.2rem] font-bold leading-none [text-shadow:0_0_20px_rgba(255,255,255,0.5)] -mt-4 md:-mt-6">
+      is happening <span class="glitch-text text-[#B829EA] [text-shadow:0_0_20px_#B829EA]">NOW!<span class="glitch-slice glitch-a" aria-hidden="true">NOW!</span><span class="glitch-slice glitch-b" aria-hidden="true">NOW!</span></span>
+    </p>
   </main>
 
   <div class="absolute bottom-[16%] md:bottom-[10%] lg:bottom-[8%] z-20 w-[120%] -ml-[10%] overflow-hidden whitespace-nowrap py-4 md:py-6 bg-black/80 border-y-[3px] -rotate-2 shadow-2xl pointer-events-none">
@@ -132,6 +135,31 @@ import LiquidChrome from './LiquidChrome';
   .ticker-track {
     animation: ticker 27s linear infinite;
     will-change: transform;
+  }
+
+  .glitch-text {
+    position: relative;
+  }
+  .glitch-slice {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .glitch-a { color: #FF1060; }
+  .glitch-b { color: #E80098; }
+
+  .hero-tagline {
+    position: relative;
+  }
+  .hero-tagline::before {
+    content: '';
+    position: absolute;
+    inset: -30px -40px;
+    background-image: radial-gradient(circle, rgba(222,0,95,0.06) 1.5px, transparent 1.5px);
+    background-size: 10px 10px;
+    pointer-events: none;
+    z-index: -1;
   }
 </style>
 
@@ -231,4 +259,82 @@ import LiquidChrome from './LiquidChrome';
     window.addEventListener('resize', updateScrollProgress, { passive: true });
     updateScrollProgress();
   }
+
+  (function glitchRandomizer() {
+    var slices = document.querySelectorAll('.glitch-slice');
+    if (!slices.length) return;
+
+    var pinkColors = ['#FF1060', '#E8005A', '#D0004A', '#FF2068', '#E60050', '#CC0044'];
+    var magentaColors = ['#E80098', '#D00080', '#BC0070', '#F000A0', '#C80078', '#B00068'];
+
+    function randomBand() {
+      var topY = Math.random() * 40;
+      var height = 45 + Math.random() * 35;
+      if (topY + height > 100) { topY = 100 - height; }
+      var bottomY = topY + height;
+      var skewL = (Math.random() - 0.5) * 40;
+      var skewR = (Math.random() - 0.5) * 40;
+      return 'polygon(0% ' + topY + '%, 100% ' + (topY + skewR) + '%, 100% ' + (bottomY + skewR) + '%, 0% ' + (bottomY + skewL) + '%)';
+    }
+
+    function randomJagged() {
+      var minY = 5 + Math.random() * 30;
+      var maxY = minY + 45 + Math.random() * 35;
+      if (maxY > 100) maxY = 100;
+      var pts = [];
+      var count = 5 + Math.floor(Math.random() * 3);
+      for (var i = 0; i < count; i++) {
+        var x = Math.random() * 100;
+        var y = minY + Math.random() * (maxY - minY);
+        pts.push(x.toFixed(1) + '% ' + y.toFixed(1) + '%');
+      }
+      return 'polygon(' + pts.join(', ') + ')';
+    }
+
+    function randomSlice() {
+      return Math.random() > 0.3 ? randomBand() : randomJagged();
+    }
+
+    function fire() {
+      var a = slices[0], b = slices[1];
+      if (!a || !b) return;
+
+      var cpA = randomSlice();
+      var cpB = randomSlice();
+      var colA = pinkColors[Math.floor(Math.random() * pinkColors.length)];
+      var colB = magentaColors[Math.floor(Math.random() * magentaColors.length)];
+      var txA = (Math.random() - 0.5) * 6;
+      var tyA = (Math.random() - 0.5) * 4;
+      var txB = (Math.random() - 0.5) * 6;
+      var tyB = (Math.random() - 0.5) * 4;
+      var skA = (Math.random() - 0.5) * 6;
+      var skB = (Math.random() - 0.5) * 6;
+
+      a.style.opacity = '1';
+      a.style.color = colA;
+      a.style.clipPath = cpA;
+      a.style.transform = 'translate(' + txA + 'px,' + tyA + 'px) skewX(' + skA + 'deg)';
+      a.style.webkitClipPath = cpA;
+
+      b.style.opacity = '1';
+      b.style.color = colB;
+      b.style.clipPath = cpB;
+      b.style.transform = 'translate(' + txB + 'px,' + tyB + 'px) skewX(' + skB + 'deg)';
+      b.style.webkitClipPath = cpB;
+
+      setTimeout(function () {
+        a.style.opacity = '0';
+        b.style.opacity = '0';
+      }, 80 + Math.random() * 220);
+    }
+
+    function schedule() {
+      setTimeout(function () {
+        fire();
+        schedule();
+      }, 1200 + Math.random() * 2500);
+    }
+
+    schedule();
+  })();
 </script>
