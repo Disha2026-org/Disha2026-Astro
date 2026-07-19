@@ -1,5 +1,28 @@
 ---
 import DitherCanvas from './ThreeCanvasImpl.jsx';
+const FINISHED_NORMALIZED = new Set([
+  'biathlon', 'tug of war', 'cycle slow race', 'super over (w)',
+  'cricket', 'film review', 'mx-techie', 'bottle art',
+  'calligraphy', 'clay modelling', 'origami', 'oil painting',
+  'pencil drawing', 'doodle art', 'dumb charades', 'mimicry',
+  'light music', 'spot commentary', 'ideathon', 'mono act',
+  'cartoon', 'open debate', "rubik's cube", 'western (duet)',
+  'guess who?', 'channel surfing', 'digital painting', 'minimal poster',
+  'speed typing', 'water colouring', 'face painting',
+  'department magazine', 'treasure hunt', 'integration bee', 'quiz',
+  'prompt writing', 'story writing', 'caption writing',
+  'jam (english)', 'jam (malayalam)',
+  'versification', 'recitation',
+]);
+
+function isFinished(item) {
+  const norm = item.toLowerCase().trim();
+  if (FINISHED_NORMALIZED.has(norm)) return true;
+  const base = norm.replace(/\((?:eng|mal|hin|english|malayalam|m\/w|w|m)\)/gi, '').trim();
+  if (FINISHED_NORMALIZED.has(base)) return true;
+  return false;
+}
+
 const REAL_EVENTS_DATA = [
   { id: 1, title: 'MAIN EVENTS', eventsList: ['RJ Hunt','Face of Disha', 'MX-Techie', 'MX-Disha', 'Fashion Show', 'Street Play', 'Disha Idol', 'Just Dance', 'Wall Painting'] },
   { id: 2, title: 'TECHNICAL', eventsList: ['Ideathon', 'Quiz', 'Technical Essay', 'Prompt Writing', 'Speed Typing'] },
@@ -66,7 +89,7 @@ const REAL_EVENTS_DATA = [
                   <span class="text-[#DE005F] font-black text-sm md:text-base w-5 shrink-0 mt-0.5 font-myriad">
                     {(index + 1).toString().padStart(2, '0')}
                   </span>
-                  <span class="text-white/90 group-hover:text-white font-bold tracking-wide text-sm sm:text-base md:text-lg flex-1 break-words whitespace-normal leading-snug font-myriad">
+                  <span class:list={["text-white/90 group-hover:text-white font-bold tracking-wide text-sm sm:text-base md:text-lg flex-1 break-words whitespace-normal leading-snug font-myriad", isFinished(item) && "line-through opacity-60 decoration-[#DE005F]"]}>
                     {item}
                   </span>
                 </div>
